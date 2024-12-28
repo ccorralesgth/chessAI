@@ -2,11 +2,30 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
 #include <SDL2/SDL_ttf.h>
+#include <map>
+#include <string>
+
 
 const int SCREEN_WIDTH = 992;
 const int SCREEN_HEIGHT = 992;
 const int BOARD_SIZE = 8;
 const int SQUARE_SIZE = SCREEN_WIDTH / BOARD_SIZE;
+
+enum PieceType
+{
+	PAWN = 1,
+	ROOK = 2,
+	KNIGHT = 3,
+	BISHOP = 4,
+	QUEEN = 5,
+	KING = 6
+};
+
+enum BoardDirection
+{
+	VERTICAL = 1,
+	HORIZONTAL = 2
+};
 
 void drawBoard(SDL_Renderer *renderer)
 {
@@ -38,7 +57,7 @@ SDL_Texture *loadTexture(const std::string &file, SDL_Renderer *ren)
 	return texture;
 }
 
-void renderPiecesInBoard(SDL_Renderer *renderer, SDL_Texture *pieces[12], int board[8][8])
+void renderPiecesInBoard(SDL_Renderer *renderer, SDL_Texture *pieces[12], int board[8][8], BoardDirection direction = VERTICAL)
 {
 	for (int i = 0; i < 8; i++)
 	{
@@ -46,11 +65,54 @@ void renderPiecesInBoard(SDL_Renderer *renderer, SDL_Texture *pieces[12], int bo
 		{
 			if (board[i][j] != 0)
 			{
-				SDL_Rect rect = {i * SQUARE_SIZE, j * SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE};
-				SDL_RenderCopy(renderer, pieces[board[i][j] - 1], NULL, &rect);
+				if(direction == HORIZONTAL){
+					SDL_Rect rect = {i * SQUARE_SIZE, j * SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE};
+					SDL_RenderCopy(renderer, pieces[board[i][j] - 1], NULL, &rect);
+				}else{
+					SDL_Rect rect = {j * SQUARE_SIZE, i * SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE};
+					SDL_RenderCopy(renderer, pieces[board[i][j] - 1], NULL, &rect);
+				}
+				// SDL_Rect rect = {i * SQUARE_SIZE, j * SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE};
+				// SDL_RenderCopy(renderer, pieces[board[i][j] - 1], NULL, &rect);
 			}
 		}
 	}
+}
+// {
+// 	for (int i = 0; i < 8; i++)
+// 	{
+// 		for (int j = 0; j < 8; j++)
+// 		{
+// 			if (board[i][j] != 0)
+// 			{
+// 				SDL_Rect rect = {i * SQUARE_SIZE, j * SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE};
+// 				SDL_RenderCopy(renderer, pieces[board[i][j] - 1], NULL, &rect);
+// 			}
+// 		}
+// 	}
+// }
+
+void drawPiecesInBoard(SDL_Renderer *renderer, std::map<std::string, SDL_Texture *> pieces, int board[8][8])
+{
+	std::map<int, std::string> pieceMap = {
+        {1, "black_pawn"},{2, "black_rook"},{3, "black_knight"}, 
+		{4, "black_bishop"},{5, "black_queen"},{6, "black_king"},
+
+        {7, "white_pawn"}, {8, "white_rook"}, {9, "white_knight"}, 
+		{10, "white_bishop"}, {11, "white_queen"}, {12, "white_king"}};
+
+	for (int i = 0; i < 8; i++)
+	{
+		for (int j = 0; j < 8; j++)
+		{
+			if (board[i][j] != 0)
+			{
+				SDL_Rect rect = {i * SQUARE_SIZE, j * SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE};
+				SDL_RenderCopy(renderer, pieces[pieceMap[board[i][j]]], NULL, &rect);
+			}
+		}
+	}
+
 }
 
 bool isValidMove2(int board[8][8], int startX, int startY, int endX, int endY)
@@ -120,28 +182,33 @@ bool isValidMove2(int board[8][8], int startX, int startY, int endX, int endY)
 	return false;
 }
 
-
 bool isValidMove(int board[8][8], int startX, int startY, int endX, int endY){
-	int piece = board[startX][startY];
-	int target = board[endX][endY];
-
-	switch (abs(piece))
-	{
-	case 1: //is a pawn
-		if (startY == endY && startX - endX == 1 && target == 0)
-			return true; // Move forward
-		if (startY == endY && startX == 6 && startX - endX == 2 && target == 0)
-			return true; // Double move from starting position
-		if (abs(startY - endY) == 1 && startX - endX == 1 && target > 6)
-			return true; // Capture		
-		break;
 	
-	default:
-		return true;
-		break;
-	}
+	//check if a piece is being selected, set selected piece enum type
+	//validate edge cases : if the move is within bounds
+	//validate edge cases : if is unobstructed move
+	//validate edge cases : if the move is not the same as the starting position
+	//validate edge cases : if king is in check or mate before making the move
+	//validate edge cases : if the move is not the same as the starting position
 
+
+	return true;
+	
+}
+
+bool isValidPawnMove(int board[8][8], int startX, int startY, int endX, int endY){
+	// if init state validate 2 move
+	//validate 2 move
+	if (startY == endY && startX - endX == 2 && board[endX][endY] == 0)
+		return true; // Double move from starting position
+
+	//Validate
+	//can move forward 
+	//diagonal capture 
+	//initial two-square advance.
+	
 	return false;
+
 }
 
 // Function to validate a move for any chess piece
@@ -279,7 +346,22 @@ int main(int argc, char *argv[])
 	}
 
 	// TODO: main screen
+
 	// init game pieces
+	// std::map<std::string, SDL_Texture *> pieces;
+	// pieces["black_pawn"] = loadTexture("src/pieces/black_pawn.png", renderer);
+    // pieces["black_rook"] = loadTexture("src/pieces/black_rook.png", renderer);
+    // pieces["black_knight"] = loadTexture("src/pieces/black_knight.png", renderer);
+    // pieces["black_bishop"] = loadTexture("src/pieces/black_bishop.png", renderer);
+    // pieces["black_queen"] = loadTexture("src/pieces/black_queen.png", renderer);
+    // pieces["black_king"] = loadTexture("src/pieces/black_king.png", renderer);
+    // pieces["white_pawn"] = loadTexture("src/pieces/white_pawn.png", renderer);
+    // pieces["white_rook"] = loadTexture("src/pieces/white_rook.png", renderer);
+    // pieces["white_knight"] = loadTexture("src/pieces/white_knight.png", renderer);
+    // pieces["white_bishop"] = loadTexture("src/pieces/white_bishop.png", renderer);
+    // pieces["white_queen"] = loadTexture("src/pieces/white_queen.png", renderer);
+    // pieces["white_king"] = loadTexture("src/pieces/white_king.png", renderer);
+	
 	SDL_Texture *pieces[12];
 	pieces[0] = loadTexture("res/pieces-svg/pawn-b.svg", renderer);
 	pieces[1] = loadTexture("res/pieces-svg/rook-b.svg", renderer);
