@@ -2,14 +2,17 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
 #include <SDL2/SDL_ttf.h>
-#include <map>
 #include <string>
+#include <vector>
 
-
-const int SCREEN_WIDTH = 992;
-const int SCREEN_HEIGHT = 992;
+const int LOG_VECTOR_SIZE = 20;
+const int SIDE_PANEL_WIDTH = 400;
+const int BOARD_WIDTH = 992;
+const int BOARD_HEIGHT = 992;
+const int SCREEN_WIDTH = BOARD_WIDTH + SIDE_PANEL_WIDTH;
+const int SCREEN_HEIGHT = BOARD_HEIGHT;
 const int BOARD_SIZE = 8;
-const int SQUARE_SIZE = SCREEN_WIDTH / BOARD_SIZE;
+const int SQUARE_SIZE = BOARD_WIDTH / BOARD_SIZE;
 
 enum PieceType
 {
@@ -65,54 +68,19 @@ void renderPiecesInBoard(SDL_Renderer *renderer, SDL_Texture *pieces[12], int bo
 		{
 			if (board[i][j] != 0)
 			{
-				if(direction == HORIZONTAL){
+				if (direction == HORIZONTAL)
+				{
 					SDL_Rect rect = {i * SQUARE_SIZE, j * SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE};
 					SDL_RenderCopy(renderer, pieces[board[i][j] - 1], NULL, &rect);
-				}else{
+				}
+				else
+				{
 					SDL_Rect rect = {j * SQUARE_SIZE, i * SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE};
 					SDL_RenderCopy(renderer, pieces[board[i][j] - 1], NULL, &rect);
 				}
-				// SDL_Rect rect = {i * SQUARE_SIZE, j * SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE};
-				// SDL_RenderCopy(renderer, pieces[board[i][j] - 1], NULL, &rect);
 			}
 		}
 	}
-}
-// {
-// 	for (int i = 0; i < 8; i++)
-// 	{
-// 		for (int j = 0; j < 8; j++)
-// 		{
-// 			if (board[i][j] != 0)
-// 			{
-// 				SDL_Rect rect = {i * SQUARE_SIZE, j * SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE};
-// 				SDL_RenderCopy(renderer, pieces[board[i][j] - 1], NULL, &rect);
-// 			}
-// 		}
-// 	}
-// }
-
-void drawPiecesInBoard(SDL_Renderer *renderer, std::map<std::string, SDL_Texture *> pieces, int board[8][8])
-{
-	std::map<int, std::string> pieceMap = {
-        {1, "black_pawn"},{2, "black_rook"},{3, "black_knight"}, 
-		{4, "black_bishop"},{5, "black_queen"},{6, "black_king"},
-
-        {7, "white_pawn"}, {8, "white_rook"}, {9, "white_knight"}, 
-		{10, "white_bishop"}, {11, "white_queen"}, {12, "white_king"}};
-
-	for (int i = 0; i < 8; i++)
-	{
-		for (int j = 0; j < 8; j++)
-		{
-			if (board[i][j] != 0)
-			{
-				SDL_Rect rect = {i * SQUARE_SIZE, j * SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE};
-				SDL_RenderCopy(renderer, pieces[pieceMap[board[i][j]]], NULL, &rect);
-			}
-		}
-	}
-
 }
 
 bool isValidMove2(int board[8][8], int startX, int startY, int endX, int endY)
@@ -182,41 +150,39 @@ bool isValidMove2(int board[8][8], int startX, int startY, int endX, int endY)
 	return false;
 }
 
-bool isValidMove(int board[8][8], int startX, int startY, int endX, int endY){
-	
-	//check if a piece is being selected, set selected piece enum type
-	//validate edge cases : if the move is within bounds
-	//validate edge cases : if is unobstructed move
-	//validate edge cases : if the move is not the same as the starting position
-	//validate edge cases : if king is in check or mate before making the move
-	//validate edge cases : if the move is not the same as the starting position
+bool isValidMove(int board[8][8], int startX, int startY, int endX, int endY)
+{
 
+	// check if a piece is being selected, set selected piece enum type
+	// validate edge cases : if the move is within bounds
+	// validate edge cases : if is unobstructed move
+	// validate edge cases : if the move is not the same as the starting position
+	// validate edge cases : if king is in check or mate before making the move
+	// validate edge cases : if the move is not the same as the starting position
 
 	return true;
-	
 }
 
-bool isValidPawnMove(int board[8][8], int startX, int startY, int endX, int endY){
+bool isValidPawnMove(int board[8][8], int startX, int startY, int endX, int endY)
+{
 	// if init state validate 2 move
-	//validate 2 move
+	// validate 2 move
 	if (startY == endY && startX - endX == 2 && board[endX][endY] == 0)
 		return true; // Double move from starting position
 
-	//Validate
-	//can move forward 
-	//diagonal capture 
-	//initial two-square advance.
-	
-	return false;
+	// Validate
+	// can move forward
+	// diagonal capture
+	// initial two-square advance.
 
+	return false;
 }
 
-// Function to validate a move for any chess piece
 bool isValidMove3(int board[8][8], int startX, int startY, int endX, int endY)
 {
 	int piece = board[startX][startY];
-	//int target = board[endX][endY];
-	
+	// int target = board[endX][endY];
+
 	// Ensure the move is within bounds
 	// Ensure the move is within bounds
 	// if (startX < 0 || startX >= 8 || startY < 0 || startY >= 8 || endX < 0 || endX >= 8 || endY < 0 || endY >= 8) {
@@ -242,27 +208,31 @@ bool isValidMove3(int board[8][8], int startX, int startY, int endX, int endY)
 	// - Negative values represent the opponent's pieces
 	// - 1 represents a pawn, 2 a knight, 3 a bishop, etc.
 
-	switch (abs(piece)) {
-	    case 1: // Pawn (example: simple forward movement)
-	        if (piece > 0) { // White pawn
-	            return (endX == startX && endY == startY - 1 && board[endY][endX] == 0) ||
-	                   (endX == startX && startY == 6 && endY == startY - 2 && board[startY - 1][startX] == 0 && board[endY][endX] == 0);
-	        } else { // Black pawn
-	            return (endX == startX && endY == startY + 1 && board[endY][endX] == 0) ||
-	                   (endX == startX && startY == 1 && endY == startY + 2 && board[startY + 1][startX] == 0 && board[endY][endX] == 0);
-	        }
-	    // case 2: // Knight
-	    //     return (abs(endX - startX) == 2 && abs(endY - startY) == 1) || (abs(endX - startX) == 1 && abs(endY - startY) == 2);
-	    // case 3: // Bishop
-	    //     return abs(endX - startX) == abs(endY - startY);
-	    // case 4: // Rook
-	    //     return (endX == startX || endY == startY);
-	    // case 5: // Queen
-	    //     return (abs(endX - startX) == abs(endY - startY)) || (endX == startX || endY == startY);
-	    // case 6: // King
-	    //     return abs(endX - startX) <= 1 && abs(endY - startY) <= 1;
-	    default:
-	        return false;
+	switch (abs(piece))
+	{
+	case 1: // Pawn (example: simple forward movement)
+		if (piece > 0)
+		{ // White pawn
+			return (endX == startX && endY == startY - 1 && board[endY][endX] == 0) ||
+				   (endX == startX && startY == 6 && endY == startY - 2 && board[startY - 1][startX] == 0 && board[endY][endX] == 0);
+		}
+		else
+		{ // Black pawn
+			return (endX == startX && endY == startY + 1 && board[endY][endX] == 0) ||
+				   (endX == startX && startY == 1 && endY == startY + 2 && board[startY + 1][startX] == 0 && board[endY][endX] == 0);
+		}
+	// case 2: // Knight
+	//     return (abs(endX - startX) == 2 && abs(endY - startY) == 1) || (abs(endX - startX) == 1 && abs(endY - startY) == 2);
+	// case 3: // Bishop
+	//     return abs(endX - startX) == abs(endY - startY);
+	// case 4: // Rook
+	//     return (endX == startX || endY == startY);
+	// case 5: // Queen
+	//     return (abs(endX - startX) == abs(endY - startY)) || (endX == startX || endY == startY);
+	// case 6: // King
+	//     return abs(endX - startX) <= 1 && abs(endY - startY) <= 1;
+	default:
+		return false;
 	}
 
 	return true;
@@ -297,44 +267,107 @@ void highlightMoves(SDL_Renderer *renderer, int board[8][8], int startX, int sta
 	}
 }
 
-int main(int argc, char *argv[])
+void drawLogSidePanel(SDL_Renderer *renderer, TTF_Font *font, const std::vector<std::string> &log)
 {
+	// Draw the side panel
+	SDL_Rect sidePanel = {BOARD_WIDTH, 0, SIDE_PANEL_WIDTH, SCREEN_HEIGHT};
+	// SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255); // Black
+	// SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255); // white
+	SDL_SetRenderDrawColor(renderer, 50, 50, 50, 255); // Dark grey background
+	SDL_RenderFillRect(renderer, &sidePanel);
 
+	// Dummy text rendering placeholder (replace with SDL_ttf for real text rendering)
+	int yOffset = 10;
+	for (const auto &message : log)
+	{
+		// Text rendering would go here using SDL_ttf library
+		std::cout << "Log: " << message << std::endl; // Output to console for now
+									  // Increment Y offset for the next log message
+
+		SDL_Color color = {255, 255, 255}; // black
+		// SDL_Color color = {0, 0, 0}; // white
+		int y = 0;
+		for (const std::string &message : log)
+		{
+			SDL_Surface *surface = TTF_RenderText_Blended(font, message.c_str(), color);
+			if (surface == nullptr)
+			{
+				std::cerr << "TTF_RenderText_Solid Error: " << TTF_GetError() << std::endl;
+				SDL_Log("TTF_RenderText_Solid Error: %s", TTF_GetError());
+				TTF_CloseFont(font);
+				return;
+			}
+
+			SDL_Texture *texture = SDL_CreateTextureFromSurface(renderer, surface);
+			if (texture == nullptr)
+			{
+				std::cerr << "SDL_CreateTextureFromSurface Error: " << SDL_GetError() << std::endl;
+				SDL_Log("SDL_CreateTextureFromSurface Error: %s", SDL_GetError());
+				SDL_FreeSurface(surface);
+				TTF_CloseFont(font);
+				return;
+			}
+
+			SDL_Rect rect = {SCREEN_WIDTH + 10, yOffset, surface->w, surface->h};
+			SDL_RenderCopy(renderer, texture, NULL, &rect);
+
+			SDL_FreeSurface(surface);
+			SDL_DestroyTexture(texture);
+
+			//y += 20;
+			yOffset += 20;	
+		}
+	}
+}
+
+void logEvent(std::vector<std::string> &log, const std::string &message)
+{
+	if (log.size() > LOG_VECTOR_SIZE)
+	{
+		log.erase(log.begin());
+	}
+	log.push_back(message);
+}
+
+bool InitLibraries(SDL_Renderer *&renderer, SDL_Window *&window, TTF_Font *&font, std::vector<std::string> &log)
+{
 	if (SDL_Init(SDL_INIT_VIDEO) != 0)
 	{
 		std::cerr << "SDL_Init Error: " << SDL_GetError() << std::endl;
 		SDL_Log("SDL_Init Error: %s", SDL_GetError());
-		return 1;
+		return false;
 	}
+	logEvent(log, "SDL_Init");
 
 	if (TTF_Init() != 0)
 	{
 		std::cerr << "TTF_Init Error: " << TTF_GetError() << std::endl;
 		SDL_Log("TTF_Init Error: %s", TTF_GetError());
 		SDL_Quit();
-		return 1;
+		return false;
 	}
-
+	logEvent(log, "TTF_Init");
 	if (IMG_Init(IMG_INIT_PNG) != IMG_INIT_PNG)
 	{
 		std::cerr << "IMG_Init Error: " << IMG_GetError() << std::endl;
 		SDL_Log("IMG_Init Error: %s", IMG_GetError());
 		TTF_Quit();
 		SDL_Quit();
-		return 1;
+		return false;
 	}
+	logEvent(log, "IMG_Init");
 
-	SDL_Window *window = SDL_CreateWindow("Chess AI", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN);
+	window = SDL_CreateWindow("Chess AI", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN);
 	if (window == nullptr)
 	{
 		std::cerr << "SDL_CreateWindow Error: " << SDL_GetError() << std::endl;
 		SDL_Log("SDL_CreateWindow Error: %s", SDL_GetError());
 		TTF_Quit();
 		SDL_Quit();
-		return 1;
+		return false;
 	}
-
-	SDL_Renderer *renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
+	logEvent(log, "SDL_CreateWindow");
+	renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
 	if (renderer == nullptr)
 	{
 		std::cerr << "SDL_CreateRenderer Error: " << SDL_GetError() << std::endl;
@@ -342,26 +375,36 @@ int main(int argc, char *argv[])
 		SDL_DestroyWindow(window);
 		TTF_Quit();
 		SDL_Quit();
-		return 1;
+		return false;
+	}
+	logEvent(log, "SDL_CreateRenderer");
+
+	font = TTF_OpenFont("res/fonts/Roboto-Regular.ttf", 16);
+	if (font == nullptr)
+	{
+		std::cerr << "TTF_OpenFont Error: " << TTF_GetError() << std::endl;
+		SDL_Log("TTF_OpenFont Error: %s", TTF_GetError());
+		return false;
+	}
+
+	return true;
+}
+
+int main(int argc, char *argv[])
+{
+	SDL_Window *window = nullptr;
+	SDL_Renderer *renderer = nullptr;
+	std::vector<std::string> log = {};
+	TTF_Font *font = nullptr;
+
+	if (!InitLibraries(renderer, window, font, log))
+	{
+		std::cerr << "Failed to initialize libraries" << std::endl;
+		return -1;
 	}
 
 	// TODO: main screen
 
-	// init game pieces
-	// std::map<std::string, SDL_Texture *> pieces;
-	// pieces["black_pawn"] = loadTexture("src/pieces/black_pawn.png", renderer);
-    // pieces["black_rook"] = loadTexture("src/pieces/black_rook.png", renderer);
-    // pieces["black_knight"] = loadTexture("src/pieces/black_knight.png", renderer);
-    // pieces["black_bishop"] = loadTexture("src/pieces/black_bishop.png", renderer);
-    // pieces["black_queen"] = loadTexture("src/pieces/black_queen.png", renderer);
-    // pieces["black_king"] = loadTexture("src/pieces/black_king.png", renderer);
-    // pieces["white_pawn"] = loadTexture("src/pieces/white_pawn.png", renderer);
-    // pieces["white_rook"] = loadTexture("src/pieces/white_rook.png", renderer);
-    // pieces["white_knight"] = loadTexture("src/pieces/white_knight.png", renderer);
-    // pieces["white_bishop"] = loadTexture("src/pieces/white_bishop.png", renderer);
-    // pieces["white_queen"] = loadTexture("src/pieces/white_queen.png", renderer);
-    // pieces["white_king"] = loadTexture("src/pieces/white_king.png", renderer);
-	
 	SDL_Texture *pieces[12];
 	pieces[0] = loadTexture("res/pieces-svg/pawn-b.svg", renderer);
 	pieces[1] = loadTexture("res/pieces-svg/rook-b.svg", renderer);
@@ -390,7 +433,7 @@ int main(int argc, char *argv[])
 	bool running = true;
 	SDL_Event event;
 	bool pieceSelected = false;
-    int selectedX = -1, selectedY = -1;
+	int selectedX = -1, selectedY = -1;
 
 	while (running)
 	{
@@ -399,6 +442,8 @@ int main(int argc, char *argv[])
 		int hoverX = mouseX / SQUARE_SIZE;
 		int hoverY = mouseY / SQUARE_SIZE;
 
+		//logEvent(log, "Mouse hover at: (" + std::to_string(hoverX) + ", " + std::to_string(hoverY) + ")");
+
 		while (SDL_PollEvent(&event))
 		{
 			if (event.type == SDL_QUIT || (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_ESCAPE))
@@ -406,52 +451,53 @@ int main(int argc, char *argv[])
 				running = false;
 			}
 			// Handle mouse click events for moving pieces
-			if (event.type == SDL_MOUSEBUTTONDOWN)
-			{
-				int x, y;
-				SDL_GetMouseState(&x, &y);
-				int startX = x / SQUARE_SIZE;
-				int startY = y / SQUARE_SIZE;
+			// if (event.type == SDL_MOUSEBUTTONDOWN)
+			// {
+			// 	int x, y;
+			// 	SDL_GetMouseState(&x, &y);
+			// 	int startX = x / SQUARE_SIZE;
+			// 	int startY = y / SQUARE_SIZE;
 
-				if (!pieceSelected && board[startX][startY] != 0)
-				{
-					pieceSelected = true;
-					selectedX = startX;
-					selectedY = startY;
-				}
-				else if (pieceSelected)
-				{
-					movePiece(board, selectedX, selectedY, startX, startY);
-					pieceSelected = false;
-					selectedX = -1;
-					selectedY = -1;
-				}
+			// 	if (!pieceSelected && board[startX][startY] != 0)
+			// 	{
+			// 		pieceSelected = true;
+			// 		selectedX = startX;
+			// 		selectedY = startY;
+			// 	}
+			// 	else if (pieceSelected)
+			// 	{
+			// 		movePiece(board, selectedX, selectedY, startX, startY);
+			// 		pieceSelected = false;
+			// 		selectedX = -1;
+			// 		selectedY = -1;
+			// 	}
 
-				if (pieceSelected)
-				{
-					highlightMoves(renderer, board, selectedX, selectedY);
-					SDL_RenderPresent(renderer);
-				}
+			// 	if (pieceSelected)
+			// 	{
+			// 		highlightMoves(renderer, board, selectedX, selectedY);
+			// 		SDL_RenderPresent(renderer);
+			// 	}
 
-				// Wait for the second click to get the destination
-				while (SDL_WaitEvent(&event))
-				{
-					if (event.type == SDL_MOUSEBUTTONDOWN)
-					{
-						SDL_GetMouseState(&x, &y);
-						int endX = x / SQUARE_SIZE;
-						int endY = y / SQUARE_SIZE;
-						movePiece(board, startX, startY, endX, endY);
-						break;
-					}
-				}
-			}
+			// 	// Wait for the second click to get the destination
+			// 	while (SDL_WaitEvent(&event))
+			// 	{
+			// 		if (event.type == SDL_MOUSEBUTTONDOWN)
+			// 		{
+			// 			SDL_GetMouseState(&x, &y);
+			// 			int endX = x / SQUARE_SIZE;
+			// 			int endY = y / SQUARE_SIZE;
+			// 			movePiece(board, startX, startY, endX, endY);
+			// 			break;
+			// 		}
+			// 	}
+			// }
 		}
 
 		SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
 		SDL_RenderClear(renderer);
 
 		drawBoard(renderer);
+		drawLogSidePanel(renderer, font, log);
 
 		// Create the players
 		// Create the game loop
@@ -459,14 +505,15 @@ int main(int argc, char *argv[])
 		// Create the game rendering
 
 		// Highlight the hovered block
-		SDL_Rect hoverRect = {hoverX * SQUARE_SIZE, hoverY * SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE};
-		SDL_SetRenderDrawColor(renderer, 255, 255, 0, 255); // Yellow with some transparency
-		SDL_RenderFillRect(renderer, &hoverRect);
-		// SDL_RenderDrawRect(renderer, &hoverRect);
+		// SDL_Rect hoverRect = {hoverX * SQUARE_SIZE, hoverY * SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE};
+		// SDL_SetRenderDrawColor(renderer, 255, 255, 0, 255); // Yellow with some transparency
+		// SDL_RenderFillRect(renderer, &hoverRect);
+		// // SDL_RenderDrawRect(renderer, &hoverRect);
 
-		renderPiecesInBoard(renderer, pieces, board);
+		// renderPiecesInBoard(renderer, pieces, board);
 
-		
+		//clear log
+		log.clear();
 
 		SDL_RenderPresent(renderer);
 		SDL_Delay(16); // 60FPS
@@ -478,6 +525,7 @@ int main(int argc, char *argv[])
 	}
 	SDL_DestroyRenderer(renderer);
 	SDL_DestroyWindow(window);
+	TTF_CloseFont(font);
 	TTF_Quit();
 	SDL_Quit();
 	return 0;
