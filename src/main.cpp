@@ -277,15 +277,14 @@ void drawLogSidePanel(SDL_Renderer *renderer, TTF_Font *font, const std::vector<
 	SDL_RenderFillRect(renderer, &sidePanel);
 
 	// Dummy text rendering placeholder (replace with SDL_ttf for real text rendering)
+	SDL_Color color = {255, 255, 255}; // black
+	// SDL_Color color = {0, 0, 0}; // white
 	int yOffset = 10;
 	for (const auto &message : log)
 	{
 		// Text rendering would go here using SDL_ttf library
-		std::cout << "Log: " << message << std::endl; // Output to console for now
-									  // Increment Y offset for the next log message
-
-		SDL_Color color = {255, 255, 255}; // black
-		// SDL_Color color = {0, 0, 0}; // white
+		std::cout << "Log: " << message << std::endl; 
+		
 		int y = 0;
 		for (const std::string &message : log)
 		{
@@ -293,9 +292,8 @@ void drawLogSidePanel(SDL_Renderer *renderer, TTF_Font *font, const std::vector<
 			if (surface == nullptr)
 			{
 				std::cerr << "TTF_RenderText_Solid Error: " << TTF_GetError() << std::endl;
-				SDL_Log("TTF_RenderText_Solid Error: %s", TTF_GetError());
-				TTF_CloseFont(font);
-				return;
+				SDL_Log("TTF_RenderText_Solid Error: %s", TTF_GetError());				
+				continue;
 			}
 
 			SDL_Texture *texture = SDL_CreateTextureFromSurface(renderer, surface);
@@ -303,9 +301,8 @@ void drawLogSidePanel(SDL_Renderer *renderer, TTF_Font *font, const std::vector<
 			{
 				std::cerr << "SDL_CreateTextureFromSurface Error: " << SDL_GetError() << std::endl;
 				SDL_Log("SDL_CreateTextureFromSurface Error: %s", SDL_GetError());
-				SDL_FreeSurface(surface);
-				TTF_CloseFont(font);
-				return;
+				SDL_FreeSurface(surface);				
+				continue;
 			}
 
 			SDL_Rect rect = {SCREEN_WIDTH + 10, yOffset, surface->w, surface->h};
@@ -314,8 +311,8 @@ void drawLogSidePanel(SDL_Renderer *renderer, TTF_Font *font, const std::vector<
 			SDL_FreeSurface(surface);
 			SDL_DestroyTexture(texture);
 
-			//y += 20;
-			yOffset += 20;	
+			// y += 20;
+			yOffset += 20;
 		}
 	}
 }
@@ -337,7 +334,6 @@ bool InitLibraries(SDL_Renderer *&renderer, SDL_Window *&window, TTF_Font *&font
 		SDL_Log("SDL_Init Error: %s", SDL_GetError());
 		return false;
 	}
-	logEvent(log, "SDL_Init");
 
 	if (TTF_Init() != 0)
 	{
@@ -346,7 +342,7 @@ bool InitLibraries(SDL_Renderer *&renderer, SDL_Window *&window, TTF_Font *&font
 		SDL_Quit();
 		return false;
 	}
-	logEvent(log, "TTF_Init");
+
 	if (IMG_Init(IMG_INIT_PNG) != IMG_INIT_PNG)
 	{
 		std::cerr << "IMG_Init Error: " << IMG_GetError() << std::endl;
@@ -355,7 +351,6 @@ bool InitLibraries(SDL_Renderer *&renderer, SDL_Window *&window, TTF_Font *&font
 		SDL_Quit();
 		return false;
 	}
-	logEvent(log, "IMG_Init");
 
 	window = SDL_CreateWindow("Chess AI", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN);
 	if (window == nullptr)
@@ -366,7 +361,7 @@ bool InitLibraries(SDL_Renderer *&renderer, SDL_Window *&window, TTF_Font *&font
 		SDL_Quit();
 		return false;
 	}
-	logEvent(log, "SDL_CreateWindow");
+
 	renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
 	if (renderer == nullptr)
 	{
@@ -377,7 +372,6 @@ bool InitLibraries(SDL_Renderer *&renderer, SDL_Window *&window, TTF_Font *&font
 		SDL_Quit();
 		return false;
 	}
-	logEvent(log, "SDL_CreateRenderer");
 
 	font = TTF_OpenFont("res/fonts/Roboto-Regular.ttf", 16);
 	if (font == nullptr)
@@ -386,6 +380,8 @@ bool InitLibraries(SDL_Renderer *&renderer, SDL_Window *&window, TTF_Font *&font
 		SDL_Log("TTF_OpenFont Error: %s", TTF_GetError());
 		return false;
 	}
+
+	logEvent(log, "Initialized libraries successfully");
 
 	return true;
 }
@@ -438,11 +434,23 @@ int main(int argc, char *argv[])
 	while (running)
 	{
 		int mouseX, mouseY;
+		int hoverX, hoverY = -1;
+		//logEvent(log, "Mouse  at: (" + std::to_string(mouseX) + ", " + std::to_string(mouseY) + ")");		
 		SDL_GetMouseState(&mouseX, &mouseY);
-		int hoverX = mouseX / SQUARE_SIZE;
-		int hoverY = mouseY / SQUARE_SIZE;
 
-		//logEvent(log, "Mouse hover at: (" + std::to_string(hoverX) + ", " + std::to_string(hoverY) + ")");
+		// if (mouseX >= BOARD_WIDTH -1 || mouseX <= 0)
+		// 	hoverX = - 1;
+		// else
+		// 	hoverX = mouseX / SQUARE_SIZE;
+
+		// if (mouseY >= BOARD_HEIGHT -1 || mouseY <= 0)
+		// 	mouseY = - 1;
+		// else
+		// 	hoverY = mouseY / SQUARE_SIZE;
+		
+		// if ((hoverX >= 0 && hoverX < 8) && (hoverY >= 0 && hoverY < 8))
+		// 	logEvent(log, "Mouse hover at: (" + std::to_string(hoverX) + ", " + std::to_string(hoverY) + ")");
+			
 
 		while (SDL_PollEvent(&event))
 		{
@@ -451,52 +459,47 @@ int main(int argc, char *argv[])
 				running = false;
 			}
 			// Handle mouse click events for moving pieces
-			// if (event.type == SDL_MOUSEBUTTONDOWN)
-			// {
-			// 	int x, y;
-			// 	SDL_GetMouseState(&x, &y);
-			// 	int startX = x / SQUARE_SIZE;
-			// 	int startY = y / SQUARE_SIZE;
+			// if (!pieceSelected && board[startX][startY] != 0)
+				// {
+				// 	pieceSelected = true;
+				// 	selectedX = startX;
+				// 	selectedY = startY;
+				// }
+				// else if (pieceSelected)
+				// {
+				// 	movePiece(board, selectedX, selectedY, startX, startY);
+				// 	pieceSelected = false;
+				// 	selectedX = -1;
+				// 	selectedY = -1;
+				// }
 
-			// 	if (!pieceSelected && board[startX][startY] != 0)
-			// 	{
-			// 		pieceSelected = true;
-			// 		selectedX = startX;
-			// 		selectedY = startY;
-			// 	}
-			// 	else if (pieceSelected)
-			// 	{
-			// 		movePiece(board, selectedX, selectedY, startX, startY);
-			// 		pieceSelected = false;
-			// 		selectedX = -1;
-			// 		selectedY = -1;
-			// 	}
+				// if (pieceSelected)
+				// {
+				// 	highlightMoves(renderer, board, selectedX, selectedY);
+				// 	SDL_RenderPresent(renderer);
+				// }
 
-			// 	if (pieceSelected)
-			// 	{
-			// 		highlightMoves(renderer, board, selectedX, selectedY);
-			// 		SDL_RenderPresent(renderer);
-			// 	}
-
-			// 	// Wait for the second click to get the destination
-			// 	while (SDL_WaitEvent(&event))
-			// 	{
-			// 		if (event.type == SDL_MOUSEBUTTONDOWN)
-			// 		{
-			// 			SDL_GetMouseState(&x, &y);
-			// 			int endX = x / SQUARE_SIZE;
-			// 			int endY = y / SQUARE_SIZE;
-			// 			movePiece(board, startX, startY, endX, endY);
-			// 			break;
-			// 		}
-			// 	}
-			// }
+				// Wait for the second click to get the destination
+				//while (SDL_WaitEvent(&event))
+				// while (SDL_WaitEventTimeout(&event, 1000*10)) // 10 seconds
+				// {
+				// 	if (event.type == SDL_MOUSEBUTTONDOWN)
+				// 	{
+				// 		SDL_GetMouseState(&x, &y);
+				// 		int endX = x / SQUARE_SIZE;
+				// 		int endY = y / SQUARE_SIZE;
+				// 		//movePiece(board, startX, startY, endX, endY);
+				// 		logEvent(log, "Mouse click end at: (" + std::to_string(startX) + ", " + std::to_string(startY) + ")");
+				// 		break;
+				// 	}
+				// }
 		}
 
 		SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
 		SDL_RenderClear(renderer);
 
 		drawBoard(renderer);
+		renderPiecesInBoard(renderer, pieces, board);
 		drawLogSidePanel(renderer, font, log);
 
 		// Create the players
@@ -512,7 +515,7 @@ int main(int argc, char *argv[])
 
 		// renderPiecesInBoard(renderer, pieces, board);
 
-		//clear log
+		// clear log
 		log.clear();
 
 		SDL_RenderPresent(renderer);

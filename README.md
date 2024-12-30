@@ -9,7 +9,7 @@ This is a chess game built with C++ and SDL
 - [x] Add Game pieces images | 12/27/24 | 40m
 - [x] Implement board pieces direction (horizontal or vertical) 12/28/24 | 5m
 - [ ] Add Pieces movement Logic. (isValidMove)  | 12/28/24 | 30m
-- [ ] create a left/right board to log movement and positioning in the same game 12/28/24 | 
+- [ ] create a left/right board to log movement and positioning in the same game 12/30/24 | 
 
 
 ## Backlog
@@ -22,3 +22,6 @@ This is a chess game built with C++ and SDL
 - add history of moves in a side board
 - built main menu
 - use OOP to organize code, (dont get fancy) and dont affect performance
+- add main menu to select board color (with animation and color pallete) , activate notation, select ai mode, and others board and game configurations
+- add network players
+- add ai to show next best move on side panel
