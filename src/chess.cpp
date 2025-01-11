@@ -322,7 +322,7 @@ int main(int argc, char *argv[])
 					pieceColSelected = mouseY / TILE_SIZE;
 					pieceSelected = true;
 					draggedPiece = board[pieceColSelected][pieceColSelected];
-					board[pieceRowSelected][pieceColSelected] = 0;
+					board[pieceColSelected][pieceRowSelected] = 0;
 
 					std::cout << "Piece selected at: (" << pieceRowSelected << ", " << pieceColSelected << ")" << std::endl;
 				}
@@ -351,7 +351,7 @@ int main(int argc, char *argv[])
 						pieceRowDragged = mouseX / TILE_SIZE;
 						pieceColDragged = mouseY / TILE_SIZE;
 						dragging = false;
-						board[pieceRowDragged][pieceColDragged] = draggedPiece;
+						board[pieceColDragged][pieceRowDragged] = draggedPiece;
 						draggedPiece = 0;
 
 						SDL_SetCursor(SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_ARROW));
