@@ -14,7 +14,6 @@ const int SCREEN_HEIGHT = BOARD_HEIGHT;
 const int BOARD_SIZE = 8;
 const int TILE_SIZE = BOARD_WIDTH / BOARD_SIZE;
 
-
 enum PieceType
 {
 	PAWN = 1,
@@ -26,31 +25,37 @@ enum PieceType
 };
 
 // Function to initialize SDL
-bool init(SDL_Window*& window, SDL_Renderer*& renderer, TTF_Font*& font) {
-	if (SDL_Init(SDL_INIT_VIDEO) < 0) {
+bool init(SDL_Window *&window, SDL_Renderer *&renderer, TTF_Font *&font)
+{
+	if (SDL_Init(SDL_INIT_VIDEO) < 0)
+	{
 		std::cerr << "Failed to initialize SDL: " << SDL_GetError() << std::endl;
 		return false;
 	}
 
-	if (TTF_Init() == -1) {
+	if (TTF_Init() == -1)
+	{
 		std::cerr << "Failed to initialize SDL_ttf: " << TTF_GetError() << std::endl;
 		return false;
 	}
 
 	window = SDL_CreateWindow("Chess Game", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN);
-	if (!window) {
+	if (!window)
+	{
 		std::cerr << "Failed to create window: " << SDL_GetError() << std::endl;
 		return false;
 	}
 
 	renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
-	if (!renderer) {
+	if (!renderer)
+	{
 		std::cerr << "Failed to create renderer: " << SDL_GetError() << std::endl;
 		return false;
 	}
 
 	font = TTF_OpenFont("res/fonts/Roboto-Regular.ttf", 32);
-	if (!font) {
+	if (!font)
+	{
 		std::cerr << "Failed to load font: " << TTF_GetError() << std::endl;
 		SDL_DestroyRenderer(renderer);
 		SDL_DestroyWindow(window);
@@ -63,21 +68,25 @@ bool init(SDL_Window*& window, SDL_Renderer*& renderer, TTF_Font*& font) {
 }
 
 // Function to render text using SDL_ttf
-void renderText(SDL_Renderer* renderer, TTF_Font* font, const std::string& text, int x, int y, bool centeredX = true, bool centeredY = true) {
-	if (!font) {
+void renderText(SDL_Renderer *renderer, TTF_Font *font, const std::string &text, int x, int y, bool centeredX = true, bool centeredY = true)
+{
+	if (!font)
+	{
 		std::cerr << "Error: Font is NULL. Cannot render text." << std::endl;
 		return;
 	}
 
 	SDL_Color white = {255, 255, 255, 255}; // Text color
-	SDL_Surface* surface = TTF_RenderText_Solid(font, text.c_str(), white);
-	if (!surface) {
+	SDL_Surface *surface = TTF_RenderText_Solid(font, text.c_str(), white);
+	if (!surface)
+	{
 		std::cerr << "Failed to create text surface: " << TTF_GetError() << std::endl;
 		return;
 	}
 
-	SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
-	if (!texture) {
+	SDL_Texture *texture = SDL_CreateTextureFromSurface(renderer, surface);
+	if (!texture)
+	{
 		std::cerr << "Failed to create text texture: " << SDL_GetError() << std::endl;
 		SDL_FreeSurface(surface);
 		return;
@@ -88,21 +97,24 @@ void renderText(SDL_Renderer* renderer, TTF_Font* font, const std::string& text,
 	SDL_FreeSurface(surface);
 
 	SDL_Rect destRect = {x, y, textWidth, textHeight};
-	if (centeredX) destRect.x -= textWidth / 2;
-	if (centeredY) destRect.y -= textHeight / 2;
+	if (centeredX)
+		destRect.x -= textWidth / 2;
+	if (centeredY)
+		destRect.y -= textHeight / 2;
 
 	SDL_RenderCopy(renderer, texture, nullptr, &destRect);
 	SDL_DestroyTexture(texture);
 }
 
 // Function to render the game menu
-void renderMenu(SDL_Renderer* renderer, TTF_Font* font) {
-	
+void renderMenu(SDL_Renderer *renderer, TTF_Font *font)
+{
+
 	SDL_SetRenderDrawColor(renderer, 0, 0, 0, 128); // Black with 50% opacity
 	SDL_Rect menuBackground = {100, 100, SCREEN_WIDTH - 200, SCREEN_HEIGHT - 200};
 	SDL_RenderFillRect(renderer, &menuBackground);
 
-	// Render menu options	
+	// Render menu options
 	renderText(renderer, font, "Resume Game", SCREEN_WIDTH / 2, 200);
 	renderText(renderer, font, "Restart Game", SCREEN_WIDTH / 2, 250);
 	renderText(renderer, font, "Settings", SCREEN_WIDTH / 2, 300);
@@ -111,15 +123,21 @@ void renderMenu(SDL_Renderer* renderer, TTF_Font* font) {
 }
 
 // Function to draw the chessboard
-void renderBoard(SDL_Renderer* renderer) {
+void renderBoard(SDL_Renderer *renderer)
+{
 	bool isLightTile = true;
-	for (int row = 0; row < 8; ++row) {
-		for (int col = 0; col < 8; ++col) {
+	for (int row = 0; row < 8; ++row)
+	{
+		for (int col = 0; col < 8; ++col)
+		{
 			SDL_Rect tile = {col * TILE_SIZE, row * TILE_SIZE, TILE_SIZE, TILE_SIZE};
-			if (isLightTile) {				
-				SDL_SetRenderDrawColor(renderer, 238, 238, 210, 255); 				
-			} else {				
-				SDL_SetRenderDrawColor(renderer, 118, 150, 86, 255);				
+			if (isLightTile)
+			{
+				SDL_SetRenderDrawColor(renderer, 238, 238, 210, 255);
+			}
+			else
+			{
+				SDL_SetRenderDrawColor(renderer, 118, 150, 86, 255);
 			}
 			SDL_RenderFillRect(renderer, &tile);
 			isLightTile = !isLightTile;
@@ -127,8 +145,9 @@ void renderBoard(SDL_Renderer* renderer) {
 		isLightTile = !isLightTile;
 	}
 }
-// 
-bool isPointInRect(int x, int y, SDL_Rect rect) {
+//
+bool isPointInRect(int x, int y, SDL_Rect rect)
+{
 	return (x >= rect.x && x <= rect.x + rect.w && y >= rect.y && y <= rect.y + rect.h);
 }
 
@@ -159,70 +178,81 @@ void renderPiecesInBoard(SDL_Renderer *renderer, SDL_Texture *pieces[12], int bo
 }
 
 // Function to draw chess notation on the board borders
-void renderBoardNotation(SDL_Renderer* renderer, TTF_Font* font) {    
-	//TODO: for better performance, we can add a notation flag on the renderBoard function and iterate only once
-	//while rendering the board and the notation
-    SDL_Color color;
-	
-    // Draw rank numbers (1-8) along the left side
-    for (int row = 0; row < 8; ++row) {
-        std::string rank = std::to_string(8 - row);
-		if(row%2==0){
-			color = {118, 150, 86, 255};
-		}else{
-			color = {238, 238, 210, 255};
-		}
-        // SDL_Surface* textSurface = TTF_RenderText_Solid(font, rank.c_str(), white);
-        SDL_Surface* textSurface = TTF_RenderText_Blended(font, rank.c_str(), color);
-        SDL_Texture* textTexture = SDL_CreateTextureFromSurface(renderer, textSurface);
+void renderBoardNotation(SDL_Renderer *renderer, TTF_Font *font)
+{
+	// TODO: for better performance, we can add a notation flag on the renderBoard function and iterate only once
+	// while rendering the board and the notation
+	SDL_Color color;
 
-        // Get text dimensions
-        int textWidth, textHeight;
-        SDL_QueryTexture(textTexture, nullptr, nullptr, &textWidth, &textHeight);
-
-        // Position text
-        // SDL_Rect destRect = {5, row * TILE_SIZE + TILE_SIZE / 2 - textHeight / 2, textWidth, textHeight};
-        SDL_Rect destRect = {5, row * TILE_SIZE + 5, textWidth, textHeight};
-        SDL_RenderCopy(renderer, textTexture, nullptr, &destRect);
-
-        SDL_FreeSurface(textSurface);
-        SDL_DestroyTexture(textTexture);
-    }
-
-    // Draw file letters (a-h) along the bottom
-    for (int col = 0; col < 8; ++col) {
-        char file = 'a' + col;
-		if(col%2==0){
-			color = {238, 238, 210, 255};
-		}else{
+	// Draw rank numbers (1-8) along the left side
+	for (int row = 0; row < 8; ++row)
+	{
+		std::string rank = std::to_string(8 - row);
+		if (row % 2 == 0)
+		{
 			color = {118, 150, 86, 255};
 		}
-        std::string fileStr(1, file);
-        SDL_Surface* textSurface = TTF_RenderText_Solid(font, fileStr.c_str(), color);
-        SDL_Texture* textTexture = SDL_CreateTextureFromSurface(renderer, textSurface);
+		else
+		{
+			color = {238, 238, 210, 255};
+		}
+		// SDL_Surface* textSurface = TTF_RenderText_Solid(font, rank.c_str(), white);
+		SDL_Surface *textSurface = TTF_RenderText_Blended(font, rank.c_str(), color);
+		SDL_Texture *textTexture = SDL_CreateTextureFromSurface(renderer, textSurface);
 
-        // Get text dimensions
-        int textWidth, textHeight;
-        SDL_QueryTexture(textTexture, nullptr, nullptr, &textWidth, &textHeight);
+		// Get text dimensions
+		int textWidth, textHeight;
+		SDL_QueryTexture(textTexture, nullptr, nullptr, &textWidth, &textHeight);
 
-        // Position text
-        SDL_Rect destRect = {col * TILE_SIZE + 5, SCREEN_HEIGHT - textHeight - 5, textWidth, textHeight};
-        SDL_RenderCopy(renderer, textTexture, nullptr, &destRect);
+		// Position text
+		// SDL_Rect destRect = {5, row * TILE_SIZE + TILE_SIZE / 2 - textHeight / 2, textWidth, textHeight};
+		SDL_Rect destRect = {5, row * TILE_SIZE + 5, textWidth, textHeight};
+		SDL_RenderCopy(renderer, textTexture, nullptr, &destRect);
 
-        SDL_FreeSurface(textSurface);
-        SDL_DestroyTexture(textTexture);
-    }
+		SDL_FreeSurface(textSurface);
+		SDL_DestroyTexture(textTexture);
+	}
+
+	// Draw file letters (a-h) along the bottom
+	for (int col = 0; col < 8; ++col)
+	{
+		char file = 'a' + col;
+		if (col % 2 == 0)
+		{
+			color = {238, 238, 210, 255};
+		}
+		else
+		{
+			color = {118, 150, 86, 255};
+		}
+		std::string fileStr(1, file);
+		SDL_Surface *textSurface = TTF_RenderText_Solid(font, fileStr.c_str(), color);
+		SDL_Texture *textTexture = SDL_CreateTextureFromSurface(renderer, textSurface);
+
+		// Get text dimensions
+		int textWidth, textHeight;
+		SDL_QueryTexture(textTexture, nullptr, nullptr, &textWidth, &textHeight);
+
+		// Position text
+		SDL_Rect destRect = {col * TILE_SIZE + 5, SCREEN_HEIGHT - textHeight - 5, textWidth, textHeight};
+		SDL_RenderCopy(renderer, textTexture, nullptr, &destRect);
+
+		SDL_FreeSurface(textSurface);
+		SDL_DestroyTexture(textTexture);
+	}
 }
 
 // Main function
-int main(int argc, char* argv[]) {
-	SDL_Window* window = nullptr;
-	SDL_Renderer* renderer = nullptr;
-	TTF_Font* font = nullptr;
+int main(int argc, char *argv[])
+{
+	SDL_Window *window = nullptr;
+	SDL_Renderer *renderer = nullptr;
+	TTF_Font *font = nullptr;
 
-	bool isMenuVisible = true; 
+	bool isMenuVisible = false;
 
-	if (!init(window, renderer, font)) {
+	if (!init(window, renderer, font))
+	{
 		return -1;
 	}
 
@@ -252,38 +282,139 @@ int main(int argc, char* argv[]) {
 
 	bool isRunning = true;
 	SDL_Event event;
+	bool dragging = false;
+	int draggedPiece = 0;
+	bool pieceSelected = false;
+	int pieceRowSelected, pieceColSelected = -1;
+	int pieceRowDragged, pieceColDragged = -1;
+	int draggingX, draggingY = -1;
 
-
-	while (isRunning) {
-		while (SDL_PollEvent(&event)) {
-			if (event.type == SDL_QUIT || (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_ESCAPE)){
+	while (isRunning)
+	{
+		
+		while (SDL_PollEvent(&event))
+		{
+			if (event.type == SDL_QUIT || (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_ESCAPE))
+			{
 				isRunning = false;
-			 } else if (event.type == SDL_MOUSEBUTTONDOWN && event.button.button) {
-				int x, y;
-				SDL_GetMouseState(&x, &y);
+			}
+			else if (event.type == SDL_MOUSEBUTTONDOWN)
+			{
+				int mouseX, mouseY;
+				SDL_GetMouseState(&mouseX, &mouseY);
 
-				// Define the bounds of the "Exit" menu entry
-				SDL_Rect exitRect = {SCREEN_WIDTH / 2 - 50, 400, 100, 30};
+				if (event.button.button && isMenuVisible)
+				{
+					// Define the bounds of the "Exit" menu entry
+					SDL_Rect exitRect = {SCREEN_WIDTH / 2 - 50, 400, 100, 30};
 
-				// Check if the "Exit" menu entry is clicked
-				if (isPointInRect(x, y, exitRect)) {
-					isRunning = false;
+					// Check if the "Exit" menu entry is clicked
+					if (isPointInRect(mouseX, mouseY, exitRect))
+					{
+						isRunning = false;
+					}
 				}
-			 }
-			 else if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_m) {
-				isMenuVisible = !isMenuVisible; // Toggle menu visibility
+				
+				if (board[mouseX / TILE_SIZE][mouseY / TILE_SIZE] != 0)
+				{
+					SDL_SetCursor(SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_HAND));					
+					pieceRowSelected = mouseX / TILE_SIZE;
+					pieceColSelected = mouseY / TILE_SIZE;
+					pieceSelected = true;
+					draggedPiece = board[pieceColSelected][pieceColSelected];
+					board[pieceRowSelected][pieceColSelected] = 0;
+
+					std::cout << "Piece selected at: (" << pieceRowSelected << ", " << pieceColSelected << ")" << std::endl;
+				}
+				// }else{
+				// 	// capture end position
+				// 	//pieceSelected = false;
+				// 	dragging = false;
+				// 	pieceRowDragged = mouseX / TILE_SIZE;
+				// 	pieceColDragged = mouseY / TILE_SIZE;
+				// 	board[pieceRowDragged][pieceColDragged] = draggedPiece;
+				// 	draggedPiece = 0;
+
+				// 	std::cout<< "Piece moved from: (" + std::to_string( pieceRowSelected) + ", " + std::to_string(pieceColSelected) + ") to (" + std::to_string(pieceRowDragged) + ", " + std::to_string(pieceColDragged) + ")" << std::endl;
+
+				// 	// movePiece(board, startX, startY, endX, endY);
+				// 	SDL_SetCursor(SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_ARROW));
+				// }
+			}
+			else if (event.type == SDL_MOUSEBUTTONUP)
+			{
+				int mouseX, mouseY;
+				SDL_GetMouseState(&mouseX, &mouseY);
+				if(pieceSelected){
+					if (dragging)
+					{
+						pieceRowDragged = mouseX / TILE_SIZE;
+						pieceColDragged = mouseY / TILE_SIZE;
+						dragging = false;
+						board[pieceRowDragged][pieceColDragged] = draggedPiece;
+						draggedPiece = 0;
+
+						SDL_SetCursor(SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_ARROW));
+					}
+					else
+					{
+						board[pieceRowSelected][pieceColSelected] = draggedPiece;
+						draggedPiece = 0;
+						pieceColSelected = -1;
+						pieceRowSelected = -1;						
+						pieceRowDragged = -1;
+						pieceColDragged = -1;
+						pieceSelected = false;
+						SDL_SetCursor(SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_ARROW));
+					}
+				}
+
+				// if (dragging)
+				// {
+				// 	pieceRowDragged = mouseX / TILE_SIZE;
+				// 	pieceColDragged = mouseY / TILE_SIZE;
+				// 	dragging = false;
+				// 	board[pieceRowDragged][pieceColDragged] = draggedPiece;
+				// 	draggedPiece = 0;
+
+				// 	SDL_SetCursor(SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_ARROW));
+				// }
+			}
+			else if (event.type == SDL_MOUSEMOTION)
+			{
+				//int mouseX, mouseY;
+				SDL_GetMouseState(&draggingX, &draggingY);
+
+				if (pieceSelected)
+					dragging = true;
+
+				// move piece while dragging
+				//  SDL_Rect rect = {mouseX - TILE_SIZE / 2, mouseY - TILE_SIZE / 2, TILE_SIZE, TILE_SIZE};
+				//  SDL_RenderCopy(renderer, pieces[draggedPiece - 1], NULL, &rect);
+			}
+			else if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_m)
+			{
+				isMenuVisible = !isMenuVisible;
 			}
 		}
 
 		SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
 		SDL_RenderClear(renderer);
 
-		if (isMenuVisible) {
+		if (isMenuVisible)
+		{
 			renderMenu(renderer, font);
-		} else {
+		}
+		else
+		{
 			renderBoard(renderer);
 			renderBoardNotation(renderer, font);
-			renderPiecesInBoard(renderer, pieces, board);			
+			renderPiecesInBoard(renderer, pieces, board);
+			if (dragging && draggedPiece != 0)
+			{	
+				SDL_Rect rect = {draggingX - TILE_SIZE / 2, draggingY - TILE_SIZE / 2, TILE_SIZE, TILE_SIZE};
+				SDL_RenderCopy(renderer, pieces[draggedPiece - 1], NULL, &rect);
+			}
 		}
 
 		SDL_RenderPresent(renderer);
