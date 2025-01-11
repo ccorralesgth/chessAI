@@ -297,6 +297,34 @@ void logSelectedPiece(int pieceSelected)
 	
 }
 
+void renderHighlightTiles(
+	SDL_Renderer *renderer, bool isPieceSelected, int pieceRowSelected, int pieceColSelected, 
+	int pieceRowDragged, int pieceColDragged, std::vector <std::vector<int>> selectedRedTiles)
+{
+	SDL_Rect rect;
+	// Highlight selected piece tile
+	if (isPieceSelected)
+	{
+		rect = {pieceColSelected * TILE_SIZE, pieceRowSelected * TILE_SIZE, TILE_SIZE, TILE_SIZE};
+		SDL_SetRenderDrawColor(renderer, 0, 0, 255, 128); // Blue for valid moves
+		SDL_RenderFillRect(renderer, &rect);
+
+		// Highlight dragged piece tile
+		rect = {pieceColDragged * TILE_SIZE, pieceRowDragged * TILE_SIZE, TILE_SIZE, TILE_SIZE};
+		SDL_SetRenderDrawColor(renderer, 0, 255, 0, 128); // Green for valid moves
+		SDL_RenderFillRect(renderer, &rect);
+	}
+
+	// Highlight red tiles tile
+	for (int i = 0; i < selectedRedTiles.size(); i++)
+	{
+		rect = {selectedRedTiles[i][0] * TILE_SIZE, selectedRedTiles[i][1] * TILE_SIZE, TILE_SIZE, TILE_SIZE};
+		SDL_SetRenderDrawColor(renderer, 255, 0, 0, 128); // Red for invalid moves
+		SDL_RenderFillRect(renderer, &rect);
+	}
+}
+
+
 // Main function
 int main(int argc, char *argv[])
 {
@@ -342,6 +370,10 @@ int main(int argc, char *argv[])
 	bool pieceSelected = false;
 	int pieceRowSelected, pieceColSelected = -1;
 	int pieceRowDragged, pieceColDragged = -1;
+	
+	//vector of selected red tiles (row, col)
+	std::vector<std::vector<int>> selectedRedTiles(8, std::vector<int>(8, 0));
+	
 	int draggingX, draggingY = -1;
 
 	while (isRunning)
@@ -353,8 +385,10 @@ int main(int argc, char *argv[])
 			{
 				isRunning = false;
 			}
-			else if (event.type == SDL_MOUSEBUTTONDOWN)
-			{
+			else if (event.type == SDL_MOUSEBUTTONDOWN && event.button.button == SDL_BUTTON_LEFT)
+			{				
+				selectedRedTiles.clear();
+
 				int mouseX, mouseY;
 				SDL_GetMouseState(&mouseX, &mouseY);
 
@@ -373,29 +407,21 @@ int main(int argc, char *argv[])
 				if (board[mouseY / TILE_SIZE][mouseX / TILE_SIZE] != 0)
 				{
 					SDL_SetCursor(SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_HAND));
-					pieceRowSelected = mouseX / TILE_SIZE;
-					pieceColSelected = mouseY / TILE_SIZE;
+					pieceColSelected = mouseX / TILE_SIZE;
+					pieceRowSelected = mouseY / TILE_SIZE;
 					pieceSelected = true;
-					draggedPiece = board[pieceColSelected][pieceRowSelected];
-					board[pieceColSelected][pieceRowSelected] = 0;
+					draggedPiece = board[pieceRowSelected][pieceColSelected];
+					board[pieceRowSelected][pieceColSelected] = 0;
 
 					logSelectedPiece(draggedPiece);
 					std::cout << "Piece selected at: (Row: " << pieceRowSelected << ", Col: " << pieceColSelected << ")" << std::endl;
 				}
-				// }else{
-				// 	// capture end position
-				// 	//pieceSelected = false;
-				// 	dragging = false;
-				// 	pieceRowDragged = mouseX / TILE_SIZE;
-				// 	pieceColDragged = mouseY / TILE_SIZE;
-				// 	board[pieceRowDragged][pieceColDragged] = draggedPiece;
-				// 	draggedPiece = 0;
-
-				// 	std::cout<< "Piece moved from: (" + std::to_string( pieceRowSelected) + ", " + std::to_string(pieceColSelected) + ") to (" + std::to_string(pieceRowDragged) + ", " + std::to_string(pieceColDragged) + ")" << std::endl;
-
-				// 	// movePiece(board, startX, startY, endX, endY);
-				// 	SDL_SetCursor(SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_ARROW));
-				// }
+				
+			}
+			else if (event.type == SDL_MOUSEBUTTONDOWN && event.button.button == SDL_BUTTON_RIGHT){
+				int mouseX, mouseY;				
+				SDL_GetMouseState(&mouseX, &mouseY);
+				selectedRedTiles.push_back({mouseX / TILE_SIZE, mouseY / TILE_SIZE});
 			}
 			else if (event.type == SDL_MOUSEBUTTONUP)
 			{
@@ -404,17 +430,17 @@ int main(int argc, char *argv[])
 				if(pieceSelected){
 					if (dragging)
 					{
-						pieceRowDragged = mouseX / TILE_SIZE;
-						pieceColDragged = mouseY / TILE_SIZE;
+						pieceColDragged = mouseX / TILE_SIZE;
+						pieceRowDragged = mouseY / TILE_SIZE;
 						dragging = false;
-						board[pieceColDragged][pieceRowDragged] = draggedPiece;
+						board[pieceRowDragged][pieceColDragged] = draggedPiece;
 						draggedPiece = 0;
 
 						SDL_SetCursor(SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_ARROW));
 					}
 					else
 					{
-						board[pieceColSelected][pieceRowSelected] = draggedPiece;
+						board[pieceRowSelected][pieceColSelected] = draggedPiece;
 						draggedPiece = 0;
 						pieceColSelected = -1;
 						pieceRowSelected = -1;
@@ -463,14 +489,16 @@ int main(int argc, char *argv[])
 		}
 		else
 		{
-			renderBoard(renderer);
+			renderBoard(renderer);			
 			renderBoardNotation(renderer, font);
+			renderHighlightTiles(renderer, pieceSelected, pieceRowSelected, pieceColSelected, pieceRowDragged, pieceColDragged, selectedRedTiles);
 			renderPiecesInBoard(renderer, pieces, board);
 			if (dragging && draggedPiece != 0)
 			{	
 				SDL_Rect rect = {draggingX - TILE_SIZE / 2, draggingY - TILE_SIZE / 2, TILE_SIZE, TILE_SIZE};
 				SDL_RenderCopy(renderer, pieces[draggedPiece - 1], NULL, &rect);
 			}
+			
 		}
 
 		SDL_RenderPresent(renderer);
