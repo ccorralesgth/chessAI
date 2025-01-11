@@ -16,12 +16,18 @@ const int TILE_SIZE = BOARD_WIDTH / BOARD_SIZE;
 
 enum PieceType
 {
-	PAWN = 1,
-	ROOK = 2,
-	KNIGHT = 3,
-	BISHOP = 4,
-	QUEEN = 5,
-	KING = 6
+	BLACK_PAWN = 1,
+	BLACK_ROOK = 2,
+	BLACK_KNIGHT = 3,
+	BLACK_BISHOP = 4,
+	BLACK_QUEEN = 5,
+	BLACK_KING = 6,
+	WHITE_PAWN = 7,
+	WHITE_ROOK = 8,
+	WHITE_KNIGHT = 9,
+	WHITE_BISHOP = 10,
+	WHITE_QUEEN = 11,
+	WHITE_KING = 12,
 };
 
 // Function to initialize SDL
@@ -242,6 +248,55 @@ void renderBoardNotation(SDL_Renderer *renderer, TTF_Font *font)
 	}
 }
 
+// Function to log selected pieces on the board [when dragging]
+void logSelectedPiece(int pieceSelected)
+{
+	//PieceType pieceType = static_cast<PieceType>(board[row][col]);
+	switch (pieceSelected)
+	{
+	case 1:
+		std::cout << "Selected piece: Black Pawn" << std::endl;
+		break;
+	case 2:
+		std::cout << "Selected piece: Black Rook" << std::endl;
+		break;
+	case 3:
+		std::cout << "Selected piece: Black Knight" << std::endl;
+		break;
+	case 4:	
+		std::cout << "Selected piece: Black Bishop" << std::endl;
+		break;
+	case 5:
+		std::cout << "Selected piece: Black Queen" << std::endl;
+		break;
+	case 6:
+		std::cout << "Selected piece: Black King" << std::endl;
+		break;	
+	case 7:
+		std::cout << "Selected piece: White Pawn" << std::endl;
+		break;
+	case 8:
+		std::cout << "Selected piece: White Rook" << std::endl;
+		break;
+	case 9:
+		std::cout << "Selected piece: White Knight" << std::endl;
+		break;
+	case 10:	
+		std::cout << "Selected piece: White Bishop" << std::endl;
+		break;
+	case 11:
+		std::cout << "Selected piece: White Queen" << std::endl;
+		break;
+	case 12:
+		std::cout << "Selected piece: White King" << std::endl;
+		break;	
+	default:
+		std::cout << "Empty Tile Selected" << std::endl;
+		break;
+	}
+	
+}
+
 // Main function
 int main(int argc, char *argv[])
 {
@@ -315,16 +370,17 @@ int main(int argc, char *argv[])
 					}
 				}
 				
-				if (board[mouseX / TILE_SIZE][mouseY / TILE_SIZE] != 0)
+				if (board[mouseY / TILE_SIZE][mouseX / TILE_SIZE] != 0)
 				{
-					SDL_SetCursor(SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_HAND));					
+					SDL_SetCursor(SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_HAND));
 					pieceRowSelected = mouseX / TILE_SIZE;
 					pieceColSelected = mouseY / TILE_SIZE;
 					pieceSelected = true;
-					draggedPiece = board[pieceColSelected][pieceColSelected];
+					draggedPiece = board[pieceColSelected][pieceRowSelected];
 					board[pieceColSelected][pieceRowSelected] = 0;
 
-					std::cout << "Piece selected at: (" << pieceRowSelected << ", " << pieceColSelected << ")" << std::endl;
+					logSelectedPiece(draggedPiece);
+					std::cout << "Piece selected at: (Row: " << pieceRowSelected << ", Col: " << pieceColSelected << ")" << std::endl;
 				}
 				// }else{
 				// 	// capture end position
@@ -358,10 +414,10 @@ int main(int argc, char *argv[])
 					}
 					else
 					{
-						board[pieceRowSelected][pieceColSelected] = draggedPiece;
+						board[pieceColSelected][pieceRowSelected] = draggedPiece;
 						draggedPiece = 0;
 						pieceColSelected = -1;
-						pieceRowSelected = -1;						
+						pieceRowSelected = -1;
 						pieceRowDragged = -1;
 						pieceColDragged = -1;
 						pieceSelected = false;
