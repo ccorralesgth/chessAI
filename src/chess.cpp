@@ -306,12 +306,13 @@ void renderHighlightTiles(
 	if (isPieceSelected)
 	{
 		rect = {pieceColSelected * TILE_SIZE, pieceRowSelected * TILE_SIZE, TILE_SIZE, TILE_SIZE};
-		SDL_SetRenderDrawColor(renderer, 0, 0, 255, 128); // Blue for valid moves
+		//SDL_SetRenderDrawColor(renderer, 0, 0, 255, 128); // Blue for valid moves
+		SDL_SetRenderDrawColor(renderer, 185, 202, 66, 128); // Blue for valid moves		
 		SDL_RenderFillRect(renderer, &rect);
 
 		// Highlight dragged piece tile
 		rect = {pieceColDragged * TILE_SIZE, pieceRowDragged * TILE_SIZE, TILE_SIZE, TILE_SIZE};
-		SDL_SetRenderDrawColor(renderer, 0, 255, 0, 128); // Green for valid moves
+		SDL_SetRenderDrawColor(renderer, 246, 246, 130, 128); // Green for valid moves
 		SDL_RenderFillRect(renderer, &rect);
 	}
 
@@ -319,7 +320,10 @@ void renderHighlightTiles(
 	for (int i = 0; i < selectedRedTiles.size(); i++)
 	{
 		rect = {selectedRedTiles[i][0] * TILE_SIZE, selectedRedTiles[i][1] * TILE_SIZE, TILE_SIZE, TILE_SIZE};
-		SDL_SetRenderDrawColor(renderer, 255, 0, 0, 128); // Red for invalid moves
+		// SDL_SetRenderDrawColor(renderer, 200, 0, 0, 50); // Red for invalid moves
+		// Enable alpha blending
+		SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
+		SDL_SetRenderDrawColor(renderer, 235, 125, 106, 128); // RGBA with 50% transparency
 		SDL_RenderFillRect(renderer, &rect);
 	}
 }
@@ -373,6 +377,9 @@ int main(int argc, char *argv[])
 	
 	//vector of selected red tiles (row, col)
 	std::vector<std::vector<int>> selectedRedTiles(8, std::vector<int>(8, 0));
+	//an array of selected red tiles (row, col)
+	//int selectedRedTilesArray[8][8] = {0};
+
 	
 	int draggingX, draggingY = -1;
 
@@ -421,7 +428,22 @@ int main(int argc, char *argv[])
 			else if (event.type == SDL_MOUSEBUTTONDOWN && event.button.button == SDL_BUTTON_RIGHT){
 				int mouseX, mouseY;				
 				SDL_GetMouseState(&mouseX, &mouseY);
-				selectedRedTiles.push_back({mouseX / TILE_SIZE, mouseY / TILE_SIZE});
+				pieceSelected = false;
+				dragging = false;
+				draggedPiece = 0;
+				//if tile exist in vector, remove it, else add it
+				for (int i = 0; i < selectedRedTiles.size(); i++)
+				{
+					if(selectedRedTiles[i][0] == mouseX / TILE_SIZE && selectedRedTiles[i][1] == mouseY / TILE_SIZE){
+						selectedRedTiles.erase(selectedRedTiles.begin() + i);
+						std::cout << "Tile removed at: (Row: " << mouseY / TILE_SIZE << ", Col: " << mouseX / TILE_SIZE << ")" << std::endl;
+						break;
+					}else{
+						selectedRedTiles.push_back({mouseX / TILE_SIZE, mouseY / TILE_SIZE});
+						std::cout << "Tile added at: (Row: " << mouseY / TILE_SIZE << ", Col: " << mouseX / TILE_SIZE << ")" << std::endl;}
+				}				
+				
+				
 			}
 			else if (event.type == SDL_MOUSEBUTTONUP)
 			{
