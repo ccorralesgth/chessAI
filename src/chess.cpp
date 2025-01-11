@@ -7,8 +7,8 @@
 
 const int LOG_VECTOR_SIZE = 20;
 const int SIDE_PANEL_WIDTH = 400;
-const int BOARD_WIDTH = 992;
-const int BOARD_HEIGHT = 992;
+const int BOARD_WIDTH = 1000;
+const int BOARD_HEIGHT = 1000;
 const int SCREEN_WIDTH = BOARD_WIDTH; // + SIDE_PANEL_WIDTH;
 const int SCREEN_HEIGHT = BOARD_HEIGHT;
 const int BOARD_SIZE = 8;
@@ -24,8 +24,6 @@ enum PieceType
 	QUEEN = 5,
 	KING = 6
 };
-
-
 
 // Function to initialize SDL
 bool init(SDL_Window*& window, SDL_Renderer*& renderer, TTF_Font*& font) {
@@ -51,7 +49,7 @@ bool init(SDL_Window*& window, SDL_Renderer*& renderer, TTF_Font*& font) {
 		return false;
 	}
 
-	font = TTF_OpenFont("res/fonts/Roboto-Regular.ttf", 24);
+	font = TTF_OpenFont("res/fonts/Roboto-Regular.ttf", 32);
 	if (!font) {
 		std::cerr << "Failed to load font: " << TTF_GetError() << std::endl;
 		SDL_DestroyRenderer(renderer);
@@ -113,7 +111,7 @@ void renderMenu(SDL_Renderer* renderer, TTF_Font* font) {
 }
 
 // Function to draw the chessboard
-void drawChessBoard(SDL_Renderer* renderer) {
+void renderBoard(SDL_Renderer* renderer) {
 	bool isLightTile = true;
 	for (int row = 0; row < 8; ++row) {
 		for (int col = 0; col < 8; ++col) {
@@ -160,6 +158,61 @@ void renderPiecesInBoard(SDL_Renderer *renderer, SDL_Texture *pieces[12], int bo
 	}
 }
 
+// Function to draw chess notation on the board borders
+void renderBoardNotation(SDL_Renderer* renderer, TTF_Font* font) {    
+	//TODO: for better performance, we can add a notation flag on the renderBoard function and iterate only once
+	//while rendering the board and the notation
+    SDL_Color color;
+	
+    // Draw rank numbers (1-8) along the left side
+    for (int row = 0; row < 8; ++row) {
+        std::string rank = std::to_string(8 - row);
+		if(row%2==0){
+			color = {118, 150, 86, 255};
+		}else{
+			color = {238, 238, 210, 255};
+		}
+        // SDL_Surface* textSurface = TTF_RenderText_Solid(font, rank.c_str(), white);
+        SDL_Surface* textSurface = TTF_RenderText_Blended(font, rank.c_str(), color);
+        SDL_Texture* textTexture = SDL_CreateTextureFromSurface(renderer, textSurface);
+
+        // Get text dimensions
+        int textWidth, textHeight;
+        SDL_QueryTexture(textTexture, nullptr, nullptr, &textWidth, &textHeight);
+
+        // Position text
+        // SDL_Rect destRect = {5, row * TILE_SIZE + TILE_SIZE / 2 - textHeight / 2, textWidth, textHeight};
+        SDL_Rect destRect = {5, row * TILE_SIZE + 5, textWidth, textHeight};
+        SDL_RenderCopy(renderer, textTexture, nullptr, &destRect);
+
+        SDL_FreeSurface(textSurface);
+        SDL_DestroyTexture(textTexture);
+    }
+
+    // Draw file letters (a-h) along the bottom
+    for (int col = 0; col < 8; ++col) {
+        char file = 'a' + col;
+		if(col%2==0){
+			color = {238, 238, 210, 255};
+		}else{
+			color = {118, 150, 86, 255};
+		}
+        std::string fileStr(1, file);
+        SDL_Surface* textSurface = TTF_RenderText_Solid(font, fileStr.c_str(), color);
+        SDL_Texture* textTexture = SDL_CreateTextureFromSurface(renderer, textSurface);
+
+        // Get text dimensions
+        int textWidth, textHeight;
+        SDL_QueryTexture(textTexture, nullptr, nullptr, &textWidth, &textHeight);
+
+        // Position text
+        SDL_Rect destRect = {col * TILE_SIZE + 5, SCREEN_HEIGHT - textHeight - 5, textWidth, textHeight};
+        SDL_RenderCopy(renderer, textTexture, nullptr, &destRect);
+
+        SDL_FreeSurface(textSurface);
+        SDL_DestroyTexture(textTexture);
+    }
+}
 
 // Main function
 int main(int argc, char* argv[]) {
@@ -228,8 +281,9 @@ int main(int argc, char* argv[]) {
 		if (isMenuVisible) {
 			renderMenu(renderer, font);
 		} else {
-			drawChessBoard(renderer);
-			renderPiecesInBoard(renderer, pieces, board);
+			renderBoard(renderer);
+			renderBoardNotation(renderer, font);
+			renderPiecesInBoard(renderer, pieces, board);			
 		}
 
 		SDL_RenderPresent(renderer);
