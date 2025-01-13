@@ -295,9 +295,26 @@ void logSelectedPiece(int pieceSelected)
 	}
 }
 
+void renderHoveredTileBorder(SDL_Renderer *renderer, int hoveredRow, int hoveredCol)
+{
+	if (hoveredRow >= 0 && hoveredCol >= 0)
+	{
+		SDL_Rect rect = {hoveredCol * TILE_SIZE, hoveredRow * TILE_SIZE, TILE_SIZE, TILE_SIZE};
+		SDL_SetRenderDrawColor(renderer, 255, 255, 255, 150);
+		for (int i = 0; i < 5; ++i) // Increase the number of iterations for a wider border
+		{
+			SDL_RenderDrawRect(renderer, &rect);
+			rect.x += 1;
+			rect.y += 1;
+			rect.w -= 2;
+			rect.h -= 2;
+		}
+	}
+}
+
 void renderHighlightTiles(
 	SDL_Renderer *renderer, bool isPieceSelected, int pieceRowSelected, int pieceColSelected,
-	int pieceRowDragged, int pieceColDragged, std::vector<std::pair<int,int>> selectedRedTiles, int selectedRedCount)
+	int pieceRowDragged, int pieceColDragged, std::vector<std::pair<int,int>> selectedRedTiles, int selectedRedCount,int hoveredRow, int hoveredCol)
 {
 
 	SDL_Rect rect;
@@ -312,9 +329,39 @@ void renderHighlightTiles(
 		rect = {pieceColDragged * TILE_SIZE, pieceRowDragged * TILE_SIZE, TILE_SIZE, TILE_SIZE};
 		SDL_SetRenderDrawColor(renderer, 246, 246, 130, 128);
 		SDL_RenderFillRect(renderer, &rect);
+		
+        // Draw a wider border for hover tile
+		renderHoveredTileBorder(renderer, hoveredRow, hoveredCol);
+		
+		// if(hoveredRow != -1 && hoveredCol != -1)
+		// {
+		// 	SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
+
+		// 	rect = {hoveredRow - TILE_SIZE / 2, hoveredCol - TILE_SIZE / 2, TILE_SIZE, TILE_SIZE};
+		// 	 SDL_SetRenderDrawColor(renderer, 255, 255, 255, 150);
+		// 	 for (int i = 0; i < 5; ++i) // Increase the number of iterations for a wider border
+		// 	 {
+		// 		 SDL_RenderDrawRect(renderer, &rect);
+		// 		 rect.x += 1;
+		// 		 rect.y += 1;
+		// 		 rect.w -= 2;
+		// 		 rect.h -= 2;
+		// 	 }
+		// }
+		
+		//SDL_SetRenderDrawColor(renderer, 128, 128, 128, 150); // gray color
+        // SDL_SetRenderDrawColor(renderer, 255, 255, 255, 150); 
+        // for (int i = 0; i < 5; ++i) // Increase the number of iterations for a wider border
+        // {
+        //     SDL_RenderDrawRect(renderer, &rect);
+        //     rect.x += 1;
+        //     rect.y += 1;
+        //     rect.w -= 2;
+        //     rect.h -= 2;
+        // }
 	}
 
-	SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
+	
 	// Render the selected red tiles
 	for (const auto &tile : selectedRedTiles)
 	{
@@ -325,6 +372,13 @@ void renderHighlightTiles(
 	}
 	SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_NONE);
 
+}
+
+void renderBorderDraggedTile(SDL_Renderer *renderer, int pieceRowDragged, int pieceColDragged)
+{
+	SDL_Rect rect = {pieceColDragged * TILE_SIZE, pieceRowDragged * TILE_SIZE, TILE_SIZE, TILE_SIZE};
+	SDL_SetRenderDrawColor(renderer, 246, 246, 130, 128);
+	SDL_RenderFillRect(renderer, &rect);
 }
 
 // Main function
@@ -381,6 +435,7 @@ int main(int argc, char *argv[])
 	// int selectedRedTilesArray[8][8] = {0};
 
 	int draggingX, draggingY = -1;
+	int hoveredRow = -1, hoveredCol = -1;
 
 	while (isRunning) //TODO: maybe for chess game do not need to check if isRunning
 	{
@@ -482,29 +537,17 @@ int main(int argc, char *argv[])
 						SDL_SetCursor(SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_ARROW));
 					}
 				}
-
-				// if (dragging)
-				// {
-				// 	pieceRowDragged = mouseX / TILE_SIZE;
-				// 	pieceColDragged = mouseY / TILE_SIZE;
-				// 	dragging = false;
-				// 	board[pieceRowDragged][pieceColDragged] = draggedPiece;
-				// 	draggedPiece = 0;
-
-				// 	SDL_SetCursor(SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_ARROW));
-				// }
 			}
 			else if (event.type == SDL_MOUSEMOTION)
 			{
-				// int mouseX, mouseY;
 				SDL_GetMouseState(&draggingX, &draggingY);
 
 				if (pieceSelected)
+				{
 					dragging = true;
-
-				// move piece while dragging
-				//  SDL_Rect rect = {mouseX - TILE_SIZE / 2, mouseY - TILE_SIZE / 2, TILE_SIZE, TILE_SIZE};
-				//  SDL_RenderCopy(renderer, pieces[draggedPiece - 1], NULL, &rect);
+					hoveredRow = draggingY / TILE_SIZE;
+					hoveredCol = draggingX / TILE_SIZE;
+				}
 			}
 			else if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_m)
 			{
@@ -523,8 +566,9 @@ int main(int argc, char *argv[])
 		{
 			renderBoard(renderer);
 			renderBoardNotation(renderer, font);
-			renderHighlightTiles(renderer, pieceSelected, pieceRowSelected, pieceColSelected, pieceRowDragged, pieceColDragged, selectedRedTiles,selectedRedTilesCount);
+			renderHighlightTiles(renderer, pieceSelected, pieceRowSelected, pieceColSelected, pieceRowDragged, pieceColDragged, selectedRedTiles,selectedRedTilesCount,hoveredRow, hoveredCol);
 			renderPiecesInBoard(renderer, pieces, board);
+			
 			if (dragging && draggedPiece != 0)
 			{
 				SDL_Rect rect = {draggingX - TILE_SIZE / 2, draggingY - TILE_SIZE / 2, TILE_SIZE, TILE_SIZE};
