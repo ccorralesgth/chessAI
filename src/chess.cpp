@@ -298,7 +298,7 @@ void logSelectedPiece(int pieceSelected)
 
 void renderHighlightTiles(
 	SDL_Renderer *renderer, bool isPieceSelected, int pieceRowSelected, int pieceColSelected,
-	int pieceRowDragged, int pieceColDragged, std::vector<std::pair<int,int>> selectedRedTiles)
+	int pieceRowDragged, int pieceColDragged, std::vector<std::pair<int,int>> selectedRedTiles, int selectedRedCount)
 {
 	SDL_Rect rect;
 	// Highlight selected piece tile
@@ -315,18 +315,31 @@ void renderHighlightTiles(
 		SDL_RenderFillRect(renderer, &rect);
 	}
 
-	// Highlight red tiles tile
-	for (int i = 0; i < selectedRedTiles.size(); i++)
+	// Render the selected red tiles
+	for (const auto &tile : selectedRedTiles)
 	{
-		std::cout << "Selected red tile: " << selectedRedTiles[i].first << ", " << selectedRedTiles[i].second << std::endl;
-		//rect = {selectedRedTiles[i][0] * TILE_SIZE, selectedRedTiles[i][1] * TILE_SIZE, TILE_SIZE, TILE_SIZE}; //this line is with vectr if vector
-		rect = {selectedRedTiles[i].first * TILE_SIZE, selectedRedTiles[i].second * TILE_SIZE, TILE_SIZE, TILE_SIZE};
-		// SDL_SetRenderDrawColor(renderer, 200, 0, 0, 50); // Red for invalid moves
-		// Enable alpha blending
-		SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND); // TODO: validate alpha is only activated for red tiles
-		SDL_SetRenderDrawColor(renderer, 235, 125, 106, 128);	   // RGBA with 50% transparency
+		//std::cout << "Total tiles: " << selectedRedTiles.size() << std::endl;
+		SDL_Rect rect = {tile.first * TILE_SIZE, tile.second * TILE_SIZE, TILE_SIZE, TILE_SIZE};
+		SDL_SetRenderDrawColor(renderer, 255, 0, 0, 128); // Red with 50% opacity
 		SDL_RenderFillRect(renderer, &rect);
 	}
+
+	//if there are selected red tiles, highlight them if they are not equal to the selected red count
+	// if (selectedRedCount != selectedRedTiles.size())
+	// {
+	// 	// Highlight red tiles tile
+	// 	for (int i = 0; i < selectedRedTiles.size(); i++) // TODO: maybe there is an optimal way to do this, not iterating over all the tiles each render time
+	// 	{
+	// 		//std::cout << "Selected red tile: " << selectedRedTiles[i].first << ", " << selectedRedTiles[i].second << std::endl;
+	// 		// rect = {selectedRedTiles[i][0] * TILE_SIZE, selectedRedTiles[i][1] * TILE_SIZE, TILE_SIZE, TILE_SIZE}; //this line is with vectr if vector
+	// 		rect = {selectedRedTiles[i].first * TILE_SIZE, selectedRedTiles[i].second * TILE_SIZE, TILE_SIZE, TILE_SIZE};
+	// 		// SDL_SetRenderDrawColor(renderer, 200, 0, 0, 50); // Red for invalid moves
+	// 		// Enable alpha blending
+	// 		SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND); // TODO: validate alpha is only activated for red tiles
+	// 		SDL_SetRenderDrawColor(renderer, 235, 125, 106, 128);	   // RGBA with 50% transparency
+	// 		SDL_RenderFillRect(renderer, &rect);
+	// 	}
+	// }
 }
 
 // Main function
@@ -378,6 +391,7 @@ int main(int argc, char *argv[])
 	// vector of selected red tiles (row, col)
 	// std::vector<std::vector<int>> selectedRedTiles(8, std::vector<int>(8, 0));
 	std::vector<std::pair<int,int>> selectedRedTiles;
+	int selectedRedTilesCount = selectedRedTiles.size();
 	// an array of selected red tiles (row, col)
 	// int selectedRedTilesArray[8][8] = {0};
 
@@ -434,7 +448,7 @@ int main(int argc, char *argv[])
 				dragging = false;
 				draggedPiece = 0;
 
-				// if tile exist in vector, remove it, else add it
+				bool tileFound = false;
 				for (int i = 0; i < selectedRedTiles.size(); i++)
 				{
 					// check if tile exists in vector
@@ -442,42 +456,18 @@ int main(int argc, char *argv[])
 					{
 						// Remove the tile from the vector
 						selectedRedTiles.erase(selectedRedTiles.begin() + i);
+						std::cout << "Tile removed at: (Row: " << mouseY / TILE_SIZE << ", Col: " << mouseX / TILE_SIZE << ")" << std::endl;
+						tileFound = true;
 						break;
 					}
 				}
-				// Add the tile to the vector if it doesn't exist
-				selectedRedTiles.push_back({mouseX / TILE_SIZE, mouseY / TILE_SIZE});
-
-				// if tile exist in vector, remove it, else add it
-				// for (int i = 0; i < selectedRedTiles.size(); i++)
-				// {
-				// 	//check if tile exists in vector
-				// 	if (selectedRedTiles[i].first == mouseX / TILE_SIZE && selectedRedTiles[i].second == mouseY / TILE_SIZE)
-				// 	{
-				// 		selectedRedTiles.erase(selectedRedTiles.begin() + i);
-				// 		std::cout << "Tile removed at: (Row: " << mouseY / TILE_SIZE << ", Col: " << mouseX / TILE_SIZE << ")" << std::endl;
-				// 		break;
-				// 	}
-				// 	else
-				// 	{
-				// 		selectedRedTiles.push_back({mouseX / TILE_SIZE, mouseY / TILE_SIZE});
-				// 		std::cout << "Tile added at: (Row: " << mouseY / TILE_SIZE << ", Col: " << mouseX / TILE_SIZE << ")" << std::endl;
-				// 	}
-
-				// 	// if (selectedRedTiles[i][0] == mouseX / TILE_SIZE && selectedRedTiles[i][1] == mouseY / TILE_SIZE)
-				// 	// {
-				// 	// 	selectedRedTiles.erase(selectedRedTiles.begin() + i);
-				// 	// 	std::cout << "Tile removed at: (Row: " << mouseY / TILE_SIZE << ", Col: " << mouseX / TILE_SIZE << ")" << std::endl;
-				// 	// 	break;
-				// 	// }
-				// 	// else
-				// 	// {
-				// 	// 	selectedRedTiles.push_back({mouseX / TILE_SIZE, mouseY / TILE_SIZE});
-				// 	// 	std::cout << "Tile added at: (Row: " << mouseY / TILE_SIZE << ", Col: " << mouseX / TILE_SIZE << ")" << std::endl;
-				// 	// }
-					
-				// }
-				std::cout << "Selected red tiles: " << selectedRedTiles.size() << std::endl;
+				if(!tileFound)
+				{
+					selectedRedTiles.push_back({mouseX / TILE_SIZE, mouseY / TILE_SIZE});
+					std::cout << "Tile added at: (Row: " << mouseY / TILE_SIZE << ", Col: " << mouseX / TILE_SIZE << ")" << std::endl;
+				}
+				std::cout << "Total tiles: " << selectedRedTiles.size() << std::endl;				
+				
 			}
 			else if (event.type == SDL_MOUSEBUTTONUP)
 			{
@@ -548,7 +538,7 @@ int main(int argc, char *argv[])
 		{
 			renderBoard(renderer);
 			renderBoardNotation(renderer, font);
-			renderHighlightTiles(renderer, pieceSelected, pieceRowSelected, pieceColSelected, pieceRowDragged, pieceColDragged, selectedRedTiles);
+			renderHighlightTiles(renderer, pieceSelected, pieceRowSelected, pieceColSelected, pieceRowDragged, pieceColDragged, selectedRedTiles,selectedRedTilesCount);
 			renderPiecesInBoard(renderer, pieces, board);
 			if (dragging && draggedPiece != 0)
 			{
