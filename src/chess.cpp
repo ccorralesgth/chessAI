@@ -295,9 +295,10 @@ void logSelectedPiece(int pieceSelected)
 	}
 }
 
-void renderHoveredTileBorder(SDL_Renderer *renderer, int hoveredRow, int hoveredCol)
+void renderHoveredTileBorder(SDL_Renderer *renderer, int hoveredRow, int hoveredCol, bool isDragging)
 {
-	if (hoveredRow >= 0 && hoveredCol >= 0)
+	//std::cout << "is dragging: (" << static_cast<bool>(isDragging) << ")" << std::endl;
+	if (hoveredRow >= 0 && hoveredCol >= 0 /*&& hoveredRow < 8 && hoveredCol < 8*/ && isDragging)
 	{
 		SDL_Rect rect = {hoveredCol * TILE_SIZE, hoveredRow * TILE_SIZE, TILE_SIZE, TILE_SIZE};
 		SDL_SetRenderDrawColor(renderer, 255, 255, 255, 150);
@@ -312,73 +313,88 @@ void renderHoveredTileBorder(SDL_Renderer *renderer, int hoveredRow, int hovered
 	}
 }
 
-void renderHighlightTiles(
-	SDL_Renderer *renderer, bool isPieceSelected, int pieceRowSelected, int pieceColSelected,
-	int pieceRowDragged, int pieceColDragged, std::vector<std::pair<int,int>> selectedRedTiles, int selectedRedCount,int hoveredRow, int hoveredCol)
+void renderHighlightSelectedPieceTile(
+	SDL_Renderer *renderer, bool isPieceSelected, int pieceRowSelected, int pieceColSelected)
 {
-
 	SDL_Rect rect;
 	// Highlight selected piece tile
 	if (isPieceSelected)
 	{
 		rect = {pieceColSelected * TILE_SIZE, pieceRowSelected * TILE_SIZE, TILE_SIZE, TILE_SIZE};
-		SDL_SetRenderDrawColor(renderer, 185, 202, 66, 128); 
+		SDL_SetRenderDrawColor(renderer, 185, 202, 66, 128); // Green with 50% opacity
+		SDL_RenderFillRect(renderer, &rect);
+	}
+}
+
+void renderHighlightDraggedPieceTile(
+	SDL_Renderer *renderer, bool isPieceSelected,int pieceRowDragged, int pieceColDragged)
+{
+	SDL_Rect rect;
+	// Highlight selected piece tile
+	// if (isPieceSelected)
+	// {
+		// rect = {pieceColSelected * TILE_SIZE, pieceRowSelected * TILE_SIZE, TILE_SIZE, TILE_SIZE};
+		// SDL_SetRenderDrawColor(renderer, 185, 202, 66, 128); // Green with 50% opacity
+		// SDL_RenderFillRect(renderer, &rect);
+
+		// Highlight dragged piece tile
+		rect = {pieceColDragged * TILE_SIZE, pieceRowDragged * TILE_SIZE, TILE_SIZE, TILE_SIZE};
+		SDL_SetRenderDrawColor(renderer, 246, 246, 130, 128); // Yellow with 50% opacity
+		SDL_RenderFillRect(renderer, &rect);
+		std::cout << "Piece dragged at: (Row: " << pieceRowDragged << ", Col: " << pieceColDragged << ")" << std::endl;
+
+	//}
+}
+
+void renderHighlightRedTile(
+	SDL_Renderer *renderer, bool isPieceSelected, std::vector<std::pair<int,int>> selectedRedTiles)
+{
+	SDL_Rect rect;
+	// Highlight selected piece tile
+	// if (isPieceSelected)
+	// {
+		SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
+		// Render the selected red tiles
+		for (const auto &tile : selectedRedTiles)
+		{
+			// std::cout << "Total tiles: " << selectedRedTiles.size() << std::endl;
+			SDL_Rect rect = {tile.first * TILE_SIZE, tile.second * TILE_SIZE, TILE_SIZE, TILE_SIZE};
+			SDL_SetRenderDrawColor(renderer, 255, 0, 0, 128); // Red with 50% opacity
+			SDL_RenderFillRect(renderer, &rect);
+		}
+		SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_NONE);
+	//}
+}
+
+void renderHighlightTiles(
+	SDL_Renderer *renderer, bool isPieceSelected, int pieceRowSelected, int pieceColSelected,
+	int pieceRowDragged, int pieceColDragged, std::vector<std::pair<int,int>> selectedRedTiles, int selectedRedCount)
+{
+	SDL_Rect rect;
+	// Highlight selected piece tile
+	if (isPieceSelected)
+	{
+		rect = {pieceColSelected * TILE_SIZE, pieceRowSelected * TILE_SIZE, TILE_SIZE, TILE_SIZE};
+		SDL_SetRenderDrawColor(renderer, 185, 202, 66, 128); // Green with 50% opacity
 		SDL_RenderFillRect(renderer, &rect);
 
 		// Highlight dragged piece tile
 		rect = {pieceColDragged * TILE_SIZE, pieceRowDragged * TILE_SIZE, TILE_SIZE, TILE_SIZE};
-		SDL_SetRenderDrawColor(renderer, 246, 246, 130, 128);
+		SDL_SetRenderDrawColor(renderer, 246, 246, 130, 128); // Yellow with 50% opacity
 		SDL_RenderFillRect(renderer, &rect);
-		
-        // Draw a wider border for hover tile
-		renderHoveredTileBorder(renderer, hoveredRow, hoveredCol);
-		
-		// if(hoveredRow != -1 && hoveredCol != -1)
-		// {
-		// 	SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
+		std::cout << "Piece dragged at: (Row: " << pieceRowDragged << ", Col: " << pieceColDragged << ")" << std::endl;
 
-		// 	rect = {hoveredRow - TILE_SIZE / 2, hoveredCol - TILE_SIZE / 2, TILE_SIZE, TILE_SIZE};
-		// 	 SDL_SetRenderDrawColor(renderer, 255, 255, 255, 150);
-		// 	 for (int i = 0; i < 5; ++i) // Increase the number of iterations for a wider border
-		// 	 {
-		// 		 SDL_RenderDrawRect(renderer, &rect);
-		// 		 rect.x += 1;
-		// 		 rect.y += 1;
-		// 		 rect.w -= 2;
-		// 		 rect.h -= 2;
-		// 	 }
-		// }
-		
-		//SDL_SetRenderDrawColor(renderer, 128, 128, 128, 150); // gray color
-        // SDL_SetRenderDrawColor(renderer, 255, 255, 255, 150); 
-        // for (int i = 0; i < 5; ++i) // Increase the number of iterations for a wider border
-        // {
-        //     SDL_RenderDrawRect(renderer, &rect);
-        //     rect.x += 1;
-        //     rect.y += 1;
-        //     rect.w -= 2;
-        //     rect.h -= 2;
-        // }
+		SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
+		// Render the selected red tiles
+		for (const auto &tile : selectedRedTiles)
+		{
+			// std::cout << "Total tiles: " << selectedRedTiles.size() << std::endl;
+			SDL_Rect rect = {tile.first * TILE_SIZE, tile.second * TILE_SIZE, TILE_SIZE, TILE_SIZE};
+			SDL_SetRenderDrawColor(renderer, 255, 0, 0, 128); // Red with 50% opacity
+			SDL_RenderFillRect(renderer, &rect);
+		}
+		SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_NONE);
 	}
-
-	
-	// Render the selected red tiles
-	for (const auto &tile : selectedRedTiles)
-	{
-		//std::cout << "Total tiles: " << selectedRedTiles.size() << std::endl;
-		SDL_Rect rect = {tile.first * TILE_SIZE, tile.second * TILE_SIZE, TILE_SIZE, TILE_SIZE};
-		SDL_SetRenderDrawColor(renderer, 255, 0, 0, 128); // Red with 50% opacity
-		SDL_RenderFillRect(renderer, &rect);
-	}
-	SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_NONE);
-
-}
-
-void renderBorderDraggedTile(SDL_Renderer *renderer, int pieceRowDragged, int pieceColDragged)
-{
-	SDL_Rect rect = {pieceColDragged * TILE_SIZE, pieceRowDragged * TILE_SIZE, TILE_SIZE, TILE_SIZE};
-	SDL_SetRenderDrawColor(renderer, 246, 246, 130, 128);
-	SDL_RenderFillRect(renderer, &rect);
 }
 
 // Main function
@@ -439,7 +455,6 @@ int main(int argc, char *argv[])
 
 	while (isRunning) //TODO: maybe for chess game do not need to check if isRunning
 	{
-
 		while (SDL_PollEvent(&event))
 		{
 			if (event.type == SDL_QUIT || (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_ESCAPE))
@@ -481,14 +496,14 @@ int main(int argc, char *argv[])
 			}
 			else if (event.type == SDL_MOUSEBUTTONDOWN && event.button.button == SDL_BUTTON_RIGHT)
 			{
-				std::cout << "Right button clicked" << std::endl;
 				int mouseX, mouseY;
 				SDL_GetMouseState(&mouseX, &mouseY);
+			
 				pieceSelected = false;
 				dragging = false;
 				draggedPiece = 0;
-
 				bool tileFound = false;
+
 				for (int i = 0; i < selectedRedTiles.size(); i++)
 				{
 					// check if tile exists in vector
@@ -513,30 +528,35 @@ int main(int argc, char *argv[])
 			{
 				int mouseX, mouseY;
 				SDL_GetMouseState(&mouseX, &mouseY);
+
 				if (pieceSelected)
 				{
 					if (dragging)
 					{
 						pieceColDragged = mouseX / TILE_SIZE;
 						pieceRowDragged = mouseY / TILE_SIZE;
-						dragging = false;
 						board[pieceRowDragged][pieceColDragged] = draggedPiece;
-						draggedPiece = 0;
-
+						//draggedPiece = 0;
+						//dragging = false;
+						//pieceSelected = false;
 						SDL_SetCursor(SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_ARROW));
 					}
 					else
 					{
 						board[pieceRowSelected][pieceColSelected] = draggedPiece;
-						draggedPiece = 0;
+						//draggedPiece = 0;
 						pieceColSelected = -1;
 						pieceRowSelected = -1;
 						pieceRowDragged = -1;
 						pieceColDragged = -1;
-						pieceSelected = false;
+						//pieceSelected = false;
+						//dragging = false;
 						SDL_SetCursor(SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_ARROW));
 					}
 				}
+				pieceSelected = false;
+				draggedPiece = 0;
+				dragging = false;
 			}
 			else if (event.type == SDL_MOUSEMOTION)
 			{
@@ -566,7 +586,13 @@ int main(int argc, char *argv[])
 		{
 			renderBoard(renderer);
 			renderBoardNotation(renderer, font);
-			renderHighlightTiles(renderer, pieceSelected, pieceRowSelected, pieceColSelected, pieceRowDragged, pieceColDragged, selectedRedTiles,selectedRedTilesCount,hoveredRow, hoveredCol);
+			
+			//renderHighlightTiles(renderer, pieceSelected, pieceRowSelected, pieceColSelected, pieceRowDragged, pieceColDragged, selectedRedTiles,selectedRedTilesCount);			
+
+			renderHighlightSelectedPieceTile(renderer, pieceSelected, pieceRowSelected, pieceColSelected);			
+			renderHoveredTileBorder(renderer, hoveredRow, hoveredCol, dragging);
+			renderHighlightDraggedPieceTile(renderer, pieceSelected, pieceRowDragged, pieceColDragged);			
+			renderHighlightRedTile(renderer, pieceSelected, selectedRedTiles);
 			renderPiecesInBoard(renderer, pieces, board);
 			
 			if (dragging && draggedPiece != 0)
