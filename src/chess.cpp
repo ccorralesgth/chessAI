@@ -489,6 +489,10 @@ int main(int argc, char *argv[])
 					pieceSelected = true;
 					draggedPiece = board[pieceRowSelected][pieceColSelected];
 					board[pieceRowSelected][pieceColSelected] = 0;
+					
+					dragging = true;
+					draggingX = mouseX;
+					draggingY = mouseY;
 
 					logSelectedPiece(draggedPiece);
 					std::cout << "Piece selected at: (Row: " << pieceRowSelected << ", Col: " << pieceColSelected << ")" << std::endl;
