@@ -115,7 +115,6 @@ void renderText(SDL_Renderer *renderer, TTF_Font *font, const std::string &text,
 // Function to render the game menu
 void renderMenu(SDL_Renderer *renderer, TTF_Font *font)
 {
-
 	SDL_SetRenderDrawColor(renderer, 0, 0, 0, 128); // Black with 50% opacity
 	SDL_Rect menuBackground = {100, 100, SCREEN_WIDTH - 200, SCREEN_HEIGHT - 200};
 	SDL_RenderFillRect(renderer, &menuBackground);
@@ -151,7 +150,7 @@ void renderBoard(SDL_Renderer *renderer)
 		isLightTile = !isLightTile;
 	}
 }
-//
+
 bool isPointInRect(int x, int y, SDL_Rect rect)
 {
 	return (x >= rect.x && x <= rect.x + rect.w && y >= rect.y && y <= rect.y + rect.h);
@@ -300,21 +299,22 @@ void renderHighlightTiles(
 	SDL_Renderer *renderer, bool isPieceSelected, int pieceRowSelected, int pieceColSelected,
 	int pieceRowDragged, int pieceColDragged, std::vector<std::pair<int,int>> selectedRedTiles, int selectedRedCount)
 {
+
 	SDL_Rect rect;
 	// Highlight selected piece tile
 	if (isPieceSelected)
 	{
 		rect = {pieceColSelected * TILE_SIZE, pieceRowSelected * TILE_SIZE, TILE_SIZE, TILE_SIZE};
-		// SDL_SetRenderDrawColor(renderer, 0, 0, 255, 128); // Blue for valid moves
-		SDL_SetRenderDrawColor(renderer, 185, 202, 66, 128); // Blue for valid moves
+		SDL_SetRenderDrawColor(renderer, 185, 202, 66, 128); 
 		SDL_RenderFillRect(renderer, &rect);
 
 		// Highlight dragged piece tile
 		rect = {pieceColDragged * TILE_SIZE, pieceRowDragged * TILE_SIZE, TILE_SIZE, TILE_SIZE};
-		SDL_SetRenderDrawColor(renderer, 246, 246, 130, 128); // Green for valid moves
+		SDL_SetRenderDrawColor(renderer, 246, 246, 130, 128);
 		SDL_RenderFillRect(renderer, &rect);
 	}
 
+	SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
 	// Render the selected red tiles
 	for (const auto &tile : selectedRedTiles)
 	{
@@ -323,23 +323,8 @@ void renderHighlightTiles(
 		SDL_SetRenderDrawColor(renderer, 255, 0, 0, 128); // Red with 50% opacity
 		SDL_RenderFillRect(renderer, &rect);
 	}
+	SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_NONE);
 
-	//if there are selected red tiles, highlight them if they are not equal to the selected red count
-	// if (selectedRedCount != selectedRedTiles.size())
-	// {
-	// 	// Highlight red tiles tile
-	// 	for (int i = 0; i < selectedRedTiles.size(); i++) // TODO: maybe there is an optimal way to do this, not iterating over all the tiles each render time
-	// 	{
-	// 		//std::cout << "Selected red tile: " << selectedRedTiles[i].first << ", " << selectedRedTiles[i].second << std::endl;
-	// 		// rect = {selectedRedTiles[i][0] * TILE_SIZE, selectedRedTiles[i][1] * TILE_SIZE, TILE_SIZE, TILE_SIZE}; //this line is with vectr if vector
-	// 		rect = {selectedRedTiles[i].first * TILE_SIZE, selectedRedTiles[i].second * TILE_SIZE, TILE_SIZE, TILE_SIZE};
-	// 		// SDL_SetRenderDrawColor(renderer, 200, 0, 0, 50); // Red for invalid moves
-	// 		// Enable alpha blending
-	// 		SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND); // TODO: validate alpha is only activated for red tiles
-	// 		SDL_SetRenderDrawColor(renderer, 235, 125, 106, 128);	   // RGBA with 50% transparency
-	// 		SDL_RenderFillRect(renderer, &rect);
-	// 	}
-	// }
 }
 
 // Main function
