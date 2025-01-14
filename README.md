@@ -18,17 +18,18 @@ This is a chess game built with C++ and SDL
 - [x] Selected board squares blocks logs and validations 12/28/24 | 30m
 - [ ] Create main menu (with options)
 - [x] Create function to show notation 1/09/25 | 1h
+- [ ] create a left/right board to log movement and positioning in the same game board 1/09/25 | 1h (removed)
 - [x] Add new color board palette 1/11/25 | 10min
 - [x] Remove horizontal mode (is not necessary) 1/11/25 | 10min
 - [x] Create new file chess.cpp with cleaner code  1/11/25 | 10min
 - [x] Finish board notation 1/11/25 | 30min
 - [x] Drag and drop pieces functionality 1/12/25 | 1h45min
 - [x] Build main menu 1/11/25 | 30 min
-- [x] Work on highlight/remove red tiles when right clicking  tile | 1/13/25 | 30min
-- [x] Work on highlight tiles when right clicking tile | 1/13/25 | 10min
-- [ ] Work on highlight tiles when dragging piece  | 1/13/25 | 2h
-- [ ] Bug when clicking before dragging, piece disappear | 1/13/25 | 2h
-- [ ] Add Pieces movement Logic. (isValidMove)  | 1/-/25 | 30m
+- [x] Implement - on highlight/remove red tiles when right clicking  tile | 1/13/25 | 30min
+- [x] Implement - on highlight tiles when right clicking tile | 1/13/25 | 10min
+- [x] Implement - on highlight tiles when dragging piece  | 1/13/25 | 2h
+- [x] Bug - when clicking before dragging, piece disappear | 1/13/25 | 30min
+- [ ] Add Pieces movement Logic. (isValidMove)  | 1/13/25 | 30m
 
 
 
@@ -43,8 +44,7 @@ This is a chess game built with C++ and SDL
 - add main menu to select board color (with animation and color palette) , activate notation, select ai mode, and others board and game configurations
 - add network players
 - add ai to show next best move on side panel
-- create a left/right board to log movement and positioning in the same game board 1/09/25 | 1h
-
+- 
 
 # General Improvement & Optimizations
 
@@ -55,26 +55,21 @@ Implement **isValidMove()** for all piece types:
 Add complete movement logic for each chess piece (e.g., pawn, knight, rook, etc.).
 Use direction vectors for sliding pieces (rooks, bishops, queens).
 Add logic for special cases like castling, pawn promotion, and  passant.
-
-Precompute valid moves for knights and kings:
+Precompute valid moves for knights and kings
 
 Store possible moves for these pieces on every square since their movements are constant.
 Use a lookup table to speed up isValidMove() and reduce redundant calculations.
 
 2. **Drag-and-Drop for Piece Interaction**
 
-Implement drag-and-drop functionality for moving pieces:
-Use SDL mouse events (SDL_MOUSEBUTTONDOWN, SDL_MOUSEBUTTONUP, SDL_MOUSEMOTION) to detect and move pieces.
 Add logic to "snap" the dragged piece back to its original position if the move is invalid.
 
 
 3. **Highlight Possible Moves**
 
 Show valid moves on the board:
-
-Highlight squares where the selected piece can legally move.
 Use precomputed moves (e.g., for knights) or dynamic pathfinding (e.g., for rooks).
-Render the highlighted squares using a semi-transparent overlay.
+
 
 4. **Log Panel Improvements**
 
