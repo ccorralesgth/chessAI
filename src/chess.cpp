@@ -365,7 +365,7 @@ void renderHighlightRedTile(
 }
 
 // Function to validate if a pawn move is valid
-bool IsValidToMovePawn(int board[8][8], int piece, int selectedRow, int selectedCol, int draggedRow, int draggedCol)
+bool IsValidPawnMove(int board[8][8], int piece, int selectedRow, int selectedCol, int draggedRow, int draggedCol)
 {
 	int target = board[draggedRow][draggedCol];
 
@@ -443,7 +443,7 @@ bool isValidMove(int board[8][8], int piece, int selectedRow, int selectedCol, i
 	{
 		case 1: // Black Pawn
 		case 7: // White Pawn
-			return IsValidToMovePawn(board, piece, selectedRow, selectedCol, draggedRow, draggedCol);
+			return IsValidPawnMove(board, piece, selectedRow, selectedCol, draggedRow, draggedCol);
 			//break;
 	// case 7: // White Pawn
 	//     if (startY == endY && endX - startX == 1 && target == 0)
